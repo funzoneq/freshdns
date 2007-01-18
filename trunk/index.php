@@ -260,7 +260,7 @@ if(!$login->isLoggedIn())
 		case "addUser":
 			try
 			{
-				$manager->addUser($_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active']);
+				$manager->addUser($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active']);
 				
 				$return = array("status" => "success", "text" => "The user has been added.");
 				echo $json->encode($return);
