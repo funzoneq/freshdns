@@ -1,0 +1,16 @@
+#summary Screenshots of FreshDNS
+#labels Featured
+
+= Introduction =
+
+All kind of screenshots of FreshDNS
+
+= Details =
+
+http://www.freshway.biz/files/freshdns/screen1.png
+http://www.freshway.biz/files/freshdns/screen2.png
+http://www.freshway.biz/files/freshdns/screen3.png
+http://www.freshway.biz/files/freshdns/screen4.png
+http://www.freshway.biz/files/freshdns/screen5.png
+http://www.freshway.biz/files/freshdns/screen6.png
+
