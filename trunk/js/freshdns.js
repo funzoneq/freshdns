@@ -343,7 +343,16 @@ function changeOwnersSelect (request)
 		
 		for(i=0; i<jsonData.length; i++)
 		{
-			document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, false);
+			if(userlevel<5)
+			{
+				if(myUserId==jsonData[i].id)
+				{
+					document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, true);
+				}
+			}else
+			{
+				document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, false);
+			}
 		}
 	}
 }
@@ -381,11 +390,14 @@ function showUserAdmin (request)
 		
 		for(i=0; i<jsonData.length; i++)
 		{
-			result += '<tr>';
-			result += '  <td>[ <a href="javascript:deleteUser('+jsonData[i].id+');">delete user</a> ]</td>';
-			result += '  <td><a href="javascript:editUser('+jsonData[i].id+');">'+jsonData[i].fullname+'</a></td>';
-			result += '  <td>'+jsonData[i].level+'</td>';
-			result += '</tr>';
+			if(!(userlevel<5 && jsonData[i].id != myUserId))
+			{
+				result += '<tr>';
+				result += '  <td>[ <a onclick="deleteUser('+jsonData[i].id+');setTimeout(\'userAdmin();\', 2500);">delete user</a> ]</td>';
+				result += '  <td><a href="javascript:editUser('+jsonData[i].id+');">'+jsonData[i].fullname+'</a></td>';
+				result += '  <td>'+jsonData[i].level+'</td>';
+				result += '</tr>';
+			}
 		}
 		
 		result += '<tr><td colspan="3">&nbsp;</td></tr>';
@@ -401,7 +413,7 @@ function showUserAdmin (request)
 		result += '<tr><td colspan="3"><input type="button" id="save" value="Add user" onclick="addUser(';
 		result += ' document.getElementById(\'username\').value, document.getElementById(\'password\').value, document.getElementById(\'passwordcheck\').value,';
 		result += ' document.getElementById(\'fullname\').value, document.getElementById(\'email\').value, document.getElementById(\'description\').value,';
-		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value);"></td></tr>';
+		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value);setTimeout(\'userAdmin();\', 2500);"></td></tr>';
 		result += '</table>';
 		
 		document.getElementById("body").innerHTML = result;
@@ -485,7 +497,7 @@ function saveUser (userId, username, password, fullname, email, description, lev
 
 function loginForm ()
 {
-	var result  = '<p><table>';
+	var result  = '<p><form><table>';
 	result += '  <tr>';
 	result += '	<td rowspan="4" width="70"><img src="images/agent.png" alt="Please login" /></td>';
 	result += '	<td colspan="3"><b>Login<span id="infoHead"></span></b></td>';
@@ -503,7 +515,7 @@ function loginForm ()
 	result += '	<td colspan="2"><input type="button" value="inloggen" id="loginBtn" ';
 	result += '	onclick=\'login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\' /></td>';
 	result += '  </tr>';
-	result += '</table></p>';
+	result += '</table></form></p>';
 	document.getElementById('login').innerHTML = result;
 }
 

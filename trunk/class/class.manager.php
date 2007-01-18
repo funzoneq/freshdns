@@ -122,7 +122,12 @@ class manager
 	/* **************************************** */
 	
 	function addZone ($domainId, $userId, $comment)
-	{	
+	{
+		if($_SESSION['level']<5)
+		{
+			$userId = $_SESSION['userId'];
+		}
+		
 		$query = "INSERT INTO `zones` ( `id` , `domain_id` , `owner` , `comment` )
 		VALUES ( NULL , '".$this->database->escape_string($domainId)."', '".$this->database->escape_string($userId)."', '".$this->database->escape_string($comment)."' );";
 		

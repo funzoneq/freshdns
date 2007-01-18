@@ -11,6 +11,7 @@
 	var liveSearchRootSubDir = "/";
 	<?
 	echo "var userlevel='".$_SESSION['level']."';\n";
+	echo "var myUserId='".$_SESSION['userId']."';\n";
 	?>
 	</script>
 	<link rel="stylesheet" href="./images/style.css" type="text/css" />
