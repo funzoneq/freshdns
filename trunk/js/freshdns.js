@@ -231,7 +231,7 @@ function editDomainWindow (request)
 			result += '    <option value="NAPTR">NAPTR</option><option value="NS">NS</option>';
 			result += '    <option value="PTR">PTR</option><option value="SOA">SOA</option>';
 			result += '    <option value="TXT">TXT</option><option value="URL">URL</option>';
-			result += '    <option value="MBOXFW">MBOXFW</option></select></td>';
+			result += '    <option value="SRV">SRV</option><option value="MBOXFW">MBOXFW</option></select></td>';
 			result += '	   <td><input type="content" size="50" value="" id="new[content]" /></td>';
 			result += '	   <td><input type="prio" size="2" value="0" id="new[prio]" /"></td>';
 			result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';

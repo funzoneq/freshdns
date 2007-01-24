@@ -76,7 +76,7 @@ if(!$login->isLoggedIn())
 		break;
 	
 		case "letterlist":
-			$records = $manager->getListByLetter($_GET['letter']);
+			$records = $manager->getListByLetter(strtolower($_GET['letter']));
 			echo $json->encode($records);
 		break;
 	

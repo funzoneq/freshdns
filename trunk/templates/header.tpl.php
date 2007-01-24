@@ -30,12 +30,12 @@
 </div>
 
 <div id="navbar">
-	<div id="letters"><a href="javascript:list('[0-9]');">0-9</a> <a href="javascript:list('A');">A</a> <a href="javascript:list('B');">B</a> <a href="javascript:list('C');">C</a>
-	<a href="javascript:list('D');">D</a> <a href="javascript:list('E');">E</a> <a href="javascript:list('F');">F</a> <a href="javascript:list('G');">G</a> <a href="javascript:list('H');">H</a>
-	<a href="javascript:list('I');">I</a> <a href="javascript:list('J');">J</a> <a href="javascript:list('K');">K</a> <a href="javascript:list('L');">L</a> <a href="javascript:list('M');">M</a>
-	<a href="javascript:list('N');">N</a> <a href="javascript:list('O');">O</a> <a href="javascript:list('P');">P</a> <a href="javascript:list('Q');">Q</a> <a href="javascript:list('R');">R</a>
-	<a href="javascript:list('S');">S</a> <a href="javascript:list('T');">T</a> <a href="javascript:list('U');">U</a> <a href="javascript:list('V');">V</a> <a href="javascript:list('W');">W</a>
-	<a href="javascript:list('X');">X</a> <a href="javascript:list('Y');">Y</a> <a href="javascript:list('Z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:userAdmin();">USERS</a></div>
+	<div id="letters"><a href="javascript:list('[0-9]');">0-9</a> <a href="javascript:list('a');">A</a> <a href="javascript:list('b');">B</a> <a href="javascript:list('c');">C</a>
+	<a href="javascript:list('d');">D</a> <a href="javascript:list('e');">E</a> <a href="javascript:list('f');">F</a> <a href="javascript:list('g');">G</a> <a href="javascript:list('h');">H</a>
+	<a href="javascript:list('i');">I</a> <a href="javascript:list('j');">J</a> <a href="javascript:list('k');">K</a> <a href="javascript:list('l');">L</a> <a href="javascript:list('m');">M</a>
+	<a href="javascript:list('n');">N</a> <a href="javascript:list('o');">O</a> <a href="javascript:list('p');">P</a> <a href="javascript:list('q');">Q</a> <a href="javascript:list('r');">R</a>
+	<a href="javascript:list('s');">S</a> <a href="javascript:list('t');">T</a> <a href="javascript:list('u');">U</a> <a href="javascript:list('v');">V</a> <a href="javascript:list('w');">W</a>
+	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:userAdmin();">USERS</a></div>
 	<div id="search"><form style="margin:0px;" name="searchform" method="get" action="index.php" id="searchform">
 	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?=$_GET['q']?>"></form></div>
 </div>
