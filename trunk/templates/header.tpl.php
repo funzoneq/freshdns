@@ -35,7 +35,8 @@
 	<a href="javascript:list('i');">I</a> <a href="javascript:list('j');">J</a> <a href="javascript:list('k');">K</a> <a href="javascript:list('l');">L</a> <a href="javascript:list('m');">M</a>
 	<a href="javascript:list('n');">N</a> <a href="javascript:list('o');">O</a> <a href="javascript:list('p');">P</a> <a href="javascript:list('q');">Q</a> <a href="javascript:list('r');">R</a>
 	<a href="javascript:list('s');">S</a> <a href="javascript:list('t');">T</a> <a href="javascript:list('u');">U</a> <a href="javascript:list('v');">V</a> <a href="javascript:list('w');">W</a>
-	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:userAdmin();">USERS</a></div>
+	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:bulkNewDomain();">BULK</a>
+	<a href="javascript:userAdmin();">USERS</a> <a href="index.php?p=logout">LOGOUT</a></div>
 	<div id="search"><form style="margin:0px;" name="searchform" method="get" action="index.php" id="searchform">
 	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?=$_GET['q']?>"></form></div>
 </div>

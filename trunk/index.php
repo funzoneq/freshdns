@@ -48,6 +48,10 @@ if(!$login->isLoggedIn())
 				echo $json->encode($return);
 			}
 		break;
+		
+		case "phpinfo":
+			phpinfo();
+		break;
 	}
 }else
 {
@@ -194,13 +198,24 @@ if(!$login->isLoggedIn())
 			}
 		break;
 		
+		case "getTemplates":
+			$return = array();
+			
+			foreach($config['DNS']['templates'] AS $name => $values)
+			{
+				$return[] = $name;
+			}
+			
+			echo $json->encode($return);
+		break;
+		
 		case "newDomain":
 			try
 			{
 				$domainId = $manager->addDomain($_POST['domain'], $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 				$manager->addZone($domainId, $_POST['owner'], "");
 				
-				foreach($config['DNS']['standardRecords'] AS $record)
+				foreach($config['DNS']['templates'][$_POST['template']] AS $record)
 				{
 					$record['name']		= str_replace("{#DOMAIN#}",		$_POST['domain'],				$record['name']);
 					$record['content']	= str_replace("{#DOMAIN#}",		$_POST['domain'],				$record['content']);
@@ -222,6 +237,45 @@ if(!$login->isLoggedIn())
 				$return = array("status" => "failed", "text" => $ex->getMessage());
 				echo $json->encode($return);
 			}
+		break;
+		
+		case "newDomains":
+			$domains = explode("\n", $_POST['domains']);
+			$succes = array();
+			$failed = array();
+			
+			foreach($domains AS $domain)
+			{
+				try
+				{
+					$domainId = $manager->addDomain($domain, $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
+					$manager->addZone($domainId, $_POST['owner'], "");
+					
+					foreach($config['DNS']['templates'][$_POST['template']] AS $record)
+					{
+						$record['name']		= str_replace("{#DOMAIN#}",		$domain,						$record['name']);
+						$record['content']	= str_replace("{#DOMAIN#}",		$domain,						$record['content']);
+						$record['content']	= str_replace("{#NS0#}",		$config['DNS']['ns0'],			$record['content']);
+						$record['content']	= str_replace("{#NS1#}",		$config['DNS']['ns1'],			$record['content']);
+						$record['content']	= str_replace("{#NS2#}",		$config['DNS']['ns2'],			$record['content']);
+						$record['content']	= str_replace("{#WEBIP#}",		$_POST['webIP'],				$record['content']);
+						$record['content']	= str_replace("{#MAILIP#}",		$_POST['mailIP'],				$record['content']);
+						$record['content']	= str_replace("{#HOSTMASTER#}", $config['DNS']['hostmaster'],	$record['content']);
+						$record['content']	= str_replace("{#SOACODE#}",	$manager->createNewSoaSerial(),	$record['content']);
+						
+						$manager->addRecord ($domainId, $record['name'], $record['type'], $record['content'], $record['ttl'], $record['prio'], $record['changeDate']);
+					}
+					
+					$succes[] = "The domain ".$domain." has been added.";
+					
+				}catch (Exception $ex)
+				{
+					$failed[] = "Failed: The domain ".$domain." hasn't been added: ".$ex->getMessage()."\n";
+				}
+			}
+			
+			$return = array("status" => "success", "text" => implode("\n", $succes)."\n".implode("\n", $failed));
+			echo $json->encode($return);
 		break;
 		
 		case "deleteUser":

@@ -10,10 +10,11 @@ function dummy ()
 
 function succesFailed (request)
 {
-	// document.getElementById("query").innerHTML = request.responseText;
-
 	if (request.readyState==4)
 	{
+		// JAVASCRIPT DEBUG INFORMATION
+		//document.getElementById("query").innerHTML = request.responseText;
+		
 		var jsonData = eval('('+request.responseText+')');
 
 		if(jsonData.status=="success")
@@ -318,6 +319,14 @@ function newDomain ()
 		onFailure:resultError
 	});
 	
+	new Ajax.Request(baseurl+"?p=getTemplates", 
+	{
+		method:"get",
+		asynchronous:true,
+		onSuccess:changeTemplateSelect,
+		onFailure:resultError
+	});
+	
 	var result  = '<table>';
 	result += '<tr>';
 	result += '	 <td colspan="2"><h1>Add a domain</h1></td>';
@@ -326,8 +335,45 @@ function newDomain ()
 	result += '<tr><td>WEB IP:</td><td><input type="text" id="webIP" /></td></tr>';
 	result += '<tr><td>Mail IP:</td><td><input type="text" id="mailIP" /></td></tr>';
 	result += '<tr><td>Owner:</td><td><select id="owner"></select></td></tr>';
+	result += '<tr><td>Template:</td><td><select id="template"></select></td></tr>';
 	result += '<tr><td>&nbsp;</td><td><input type="button" id="add" value="Add domain" onClick="saveNewRecord(document.getElementById(\'domain\').value, ';
-	result += 'document.getElementById(\'webIP\').value, document.getElementById(\'mailIP\').value, document.getElementById(\'owner\').value);" /></td></tr>';
+	result += 'document.getElementById(\'webIP\').value, document.getElementById(\'mailIP\').value, document.getElementById(\'owner\').value, ';
+	result += 'document.getElementById(\'template\').value);" /></td></tr>';
+	result += '</table>';
+	
+	document.getElementById('body').innerHTML = result;
+}
+
+function bulkNewDomain ()
+{
+	new Ajax.Request(baseurl+"?p=getOwners", 
+	{
+		method:"get",
+		asynchronous:true,
+		onSuccess:changeOwnersSelect,
+		onFailure:resultError
+	});
+	
+	new Ajax.Request(baseurl+"?p=getTemplates", 
+	{
+		method:"get",
+		asynchronous:true,
+		onSuccess:changeTemplateSelect,
+		onFailure:resultError
+	});
+	
+	var result  = '<table>';
+	result += '<tr>';
+	result += '	 <td colspan="2"><h1>Add multiple domains</h1></td>';
+	result += '</tr>';
+	result += '<tr><td>Domain names:<br />(one domain per line)</td><td><textarea id="domains" rows="10" cols="50"></textarea></td></tr>';
+	result += '<tr><td>WEB IP:</td><td><input type="text" id="webIP" /></td></tr>';
+	result += '<tr><td>Mail IP:</td><td><input type="text" id="mailIP" /></td></tr>';
+	result += '<tr><td>Owner:</td><td><select id="owner"></select></td></tr>';
+	result += '<tr><td>Template:</td><td><select id="template"></select></td></tr>';
+	result += '<tr><td>&nbsp;</td><td><input type="button" id="add" value="Add domains" onClick="saveNewDomains(document.getElementById(\'domains\').value, ';
+	result += 'document.getElementById(\'webIP\').value, document.getElementById(\'mailIP\').value, document.getElementById(\'owner\').value, ';
+	result += 'document.getElementById(\'template\').value);" /></td></tr>';
 	result += '</table>';
 	
 	document.getElementById('body').innerHTML = result;
@@ -357,12 +403,39 @@ function changeOwnersSelect (request)
 	}
 }
 
-function saveNewRecord (domain, webIP, mailIP, owner)
+function changeTemplateSelect (request)
+{
+	if (request.readyState==4)
+	{
+		var jsonData = eval('('+request.responseText+')');
+		
+		document.getElementById('template').options.length=0;
+		
+		for(i=0; i<jsonData.length; i++)
+		{
+			document.getElementById('template').options[i]=new Option(jsonData[i], jsonData[i], false, false);
+		}
+	}
+}
+
+function saveNewRecord (domain, webIP, mailIP, owner, template)
 {
 	new Ajax.Request(baseurl+"?p=newDomain", 
 	{
 		method:"post",
-		postBody:"domain="+escape(domain)+"&webIP="+escape(webIP)+"&mailIP="+escape(mailIP)+"&owner="+escape(owner),
+		postBody:"domain="+escape(domain)+"&webIP="+escape(webIP)+"&mailIP="+escape(mailIP)+"&owner="+escape(owner)+"&template="+escape(template),
+		asynchronous:true,
+		onSuccess:succesFailed,
+		onFailure:resultError
+	});
+}
+
+function saveNewDomains (domains, webIP, mailIP, owner, template)
+{
+	new Ajax.Request(baseurl+"?p=newDomains", 
+	{
+		method:"post",
+		postBody:"domains="+escape(domains)+"&webIP="+escape(webIP)+"&mailIP="+escape(mailIP)+"&owner="+escape(owner)+"&template="+escape(template),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError

@@ -8,9 +8,9 @@ define('CLASSES',		PATH.'class/');
 
 /*****************************************************/
 
-$config['mysql']['use']							= false;
-$config['mysql']['username']					= 'pdns';
-$config['mysql']['password']					= 'password';	
+$config['mysql']['use']							= true;
+$config['mysql']['username']					= 'root';
+$config['mysql']['password']					= 'gonein60sec';	
 $config['mysql']['database']					= 'pdns';
 $config['mysql']['master_host']					= 'localhost';
 $config['mysql']['slave_hosts']					= array('localhost','localhost'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
@@ -36,7 +36,7 @@ $config['DNS']['hostmaster']					= 'hostmaster@example.com';
 
 /*****************************************************/
 
-$config['DNS']['standardRecords'] = array( # DO NOT CHANGE, UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config['DNS']['templates']['standardRecords'] = array( # DO NOT CHANGE, UNLESS YOU KNOW WHAT YOU ARE DOING!
 array("name" => "{#DOMAIN#}",		"type" => "SOA",	"content" => "{#NS0#} {#HOSTMASTER#} {#SOACODE#}",	"prio" => "0",	"ttl" => "3600"),
 array("name" => "{#DOMAIN#}",		"type" => "NS",		"content" => "{#NS0#}",								"prio" => "0",	"ttl" => "3600"),
 array("name" => "{#DOMAIN#}",		"type" => "NS",		"content" => "{#NS1#}",								"prio" => "0",	"ttl" => "3600"),
@@ -45,8 +45,15 @@ array("name" => "{#DOMAIN#}",		"type" => "A",		"content" => "{#WEBIP#}",							"
 array("name" => "*.{#DOMAIN#}",		"type" => "A",		"content" => "{#WEBIP#}",							"prio" => "0",	"ttl" => "3600"),
 array("name" => "www.{#DOMAIN#}",	"type" => "A",		"content" => "{#WEBIP#}",							"prio" => "0",	"ttl" => "3600"),
 array("name" => "mail.{#DOMAIN#}",	"type" => "A",		"content" => "{#MAILIP#}",							"prio" => "0",	"ttl" => "3600"),
-array("name" => "{#DOMAIN#}",		"type" => "MX",		"content" => "mail.{#DOMAIN#}",						"prio" => "10", "ttl" => "3600")
-);
+array("name" => "{#DOMAIN#}",		"type" => "MX",		"content" => "mail.{#DOMAIN#}",						"prio" => "10", "ttl" => "3600"));
+
+$config['DNS']['templates']['minimal'] = array( # DO NOT CHANGE, UNLESS YOU KNOW WHAT YOU ARE DOING!
+array("name" => "{#DOMAIN#}",		"type" => "SOA",	"content" => "{#NS0#} {#HOSTMASTER#} {#SOACODE#}",	"prio" => "0",	"ttl" => "3600"),
+array("name" => "{#DOMAIN#}",		"type" => "NS",		"content" => "{#NS0#}",								"prio" => "0",	"ttl" => "3600"),
+array("name" => "{#DOMAIN#}",		"type" => "NS",		"content" => "{#NS1#}",								"prio" => "0",	"ttl" => "3600"),
+array("name" => "{#DOMAIN#}",		"type" => "NS",		"content" => "{#NS2#}",								"prio" => "0",	"ttl" => "3600"),
+array("name" => "*.{#DOMAIN#}",		"type" => "A",		"content" => "{#WEBIP#}",							"prio" => "0",	"ttl" => "3600"),
+array("name" => "{#DOMAIN#}",		"type" => "MX",		"content" => "mail.{#DOMAIN#}",						"prio" => "10", "ttl" => "3600"));
 
 /*****************************************************/
 

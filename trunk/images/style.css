@@ -38,7 +38,7 @@ body {
 }
 
 #letters {
-	width: 700px;
+	width: 790px;
 	color: #4169e1;
 	font-size: 17px;
 	font-weight: bold;
@@ -301,4 +301,8 @@ ul#LSShadow {
      
      color: #564b47;  
      background-color: #ccc;
+}
+
+td {
+	vertical-align: top;
 }
