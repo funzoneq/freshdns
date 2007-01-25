@@ -52,7 +52,7 @@ switch($_GET['p'])
 			<td>&nbsp;</td>
 		  </tr>
 		  <tr>
-		    <td><input type="submit" name="submit" value="Installeren"></td>
+		    <td><input type="submit" name="submit" value="Install"></td>
 			<td>&nbsp;</td>
 		  </tr>
 		</table></form>';

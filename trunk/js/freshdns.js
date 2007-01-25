@@ -585,7 +585,7 @@ function loginForm ()
 	result += '	<td><input type="password" id="passwordfield" /></td>';
 	result += '  </tr>';
 	result += '  <tr>';
-	result += '	<td colspan="2"><input type="button" value="inloggen" id="loginBtn" ';
+	result += '	<td colspan="2"><input type="button" value="login" id="loginBtn" ';
 	result += '	onclick=\'login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\' /></td>';
 	result += '  </tr>';
 	result += '</table></form></p>';
