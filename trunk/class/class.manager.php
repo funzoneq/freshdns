@@ -218,7 +218,7 @@ class manager
 	function addDomain ($name, $master, $lastCheck, $type, $notifiedSerial, $account)
 	{
 		$query = "INSERT INTO `domains` ( `id` , `name` , `master` , `last_check` , `type` , `notified_serial` , `account` ) VALUES
-		('', '".$this->database->escape_string($name)."', '".$this->database->escape_string($master)."' , '".$this->database->escape_string($lastCheck)."' ,
+		('', '".$this->database->escape_string(trim($name))."', '".$this->database->escape_string($master)."' , '".$this->database->escape_string($lastCheck)."' ,
 		'".$this->database->escape_string($type)."', '".$this->database->escape_string($notifiedSerial)."' , '".$this->database->escape_string($account)."');";
 		
 		if($this->database->query_master($query))
@@ -405,7 +405,7 @@ class manager
 	function addRecord ($domainId, $name, $type, $content, $ttl, $prio, $changeDate)
 	{
 		$query = "INSERT INTO `records` ( `id` , `domain_id` , `name` , `type` , `content` , `ttl` , `prio` , `change_date` ) VALUES
-		( '', '".$this->database->escape_string($domainId)."', '".$this->database->escape_string($name)."', '".$this->database->escape_string($type)."',
+		( '', '".$this->database->escape_string($domainId)."', '".$this->database->escape_string(trim($name))."', '".$this->database->escape_string($type)."',
 		'".$this->database->escape_string($content)."', '".$this->database->escape_string($ttl)."', '".$this->database->escape_string($prio)."', '".$this->database->escape_string($changeDate)."');";
 		
 		if($this->database->query_master($query))
