@@ -1,4 +1,4 @@
-<?
+<?php
 class manager
 {
 	private $database;
@@ -410,6 +410,9 @@ class manager
 		
 		if($this->database->query_master($query))
 		{
+			// UPDATE THE SOA SERIAL
+			$this->updateSoaSerial($domainId);
+			
 			return mysql_insert_id();
 		}else
 		{
@@ -428,6 +431,9 @@ class manager
 
 		if($this->database->query_master($query))
 		{
+			// UPDATE THE SOA SERIAL
+			$this->updateSoaSerial($domainId);
+			
 			return true;
 		}else
 		{
@@ -435,7 +441,7 @@ class manager
 		}
 	}
 	
-	function removeRecord ($recordId)
+	function removeRecord ($recordId, $domainId)
 	{
 		$query = "DELETE records FROM records, zones WHERE records.domain_id = zones.domain_id AND";
 		
@@ -448,6 +454,9 @@ class manager
 
 		if($this->database->query_master($query))
 		{
+			// UPDATE THE SOA SERIAL
+			$this->updateSoaSerial($domainId);
+			
 			return true;
 		}else
 		{
@@ -508,6 +517,37 @@ class manager
 	function createNewSoaSerial ()
 	{
 		return date("Ymd").'00';
+	}
+	
+	function updateSoaSerial ($domainId)
+	{
+		$query 		= "SELECT content FROM records WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
+		$query 		= $this->database->query_slave($query) or die ($this->database->error());
+		$record		= $this->database->fetch_array($query);
+		$soa		= explode(" ", $record['content']);
+		
+		if(substr($soa[2], -2, 2)==99) // IF THE SOA == 99 (max) THEN CREATE A NEW SOA
+		{
+			$soa[2] = $this->createNewSoaSerial();
+		}else // SOA + 1
+		{
+			$soa[2]++;
+		}
+		
+		return $this->setSoaSerial ($domainId, $soa[0], $soa[1], $soa[2]);
+	}
+	
+	function setSoaSerial ($domainId, $ns0, $hostmaster, $serial)
+	{
+		$query		= "UPDATE records SET content='".$this->database->escape_string($ns0." ".$hostmaster." ".$serial)."' WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
+		
+		if($this->database->query_master($query))
+		{
+			return true;
+		}else
+		{
+			throw new Exception ($this->database->error());
+		}
 	}
 
 	/* **************************************** */

@@ -147,7 +147,7 @@ if(!$login->isLoggedIn())
 		case "removeRecord":
 			try
 			{
-				$manager->removeRecord($_GET['recordId']);
+				$manager->removeRecord($_GET['recordId'], $_GET['domainId']);
 				
 				$return = array("status" => "success", "text" => "The record has been deleted.");
 				echo $json->encode($return);
@@ -229,6 +229,9 @@ if(!$login->isLoggedIn())
 					
 					$manager->addRecord ($domainId, $record['name'], $record['type'], $record['content'], $record['ttl'], $record['prio'], $record['changeDate']);
 				}
+				
+				// IT'S A NEW DOMAIN, RESET THE SOA TO 00
+				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial());
 				
 				$return = array("status" => "success", "text" => "The domain has been added.");
 				echo $json->encode($return);

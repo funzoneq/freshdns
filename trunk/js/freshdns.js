@@ -209,7 +209,7 @@ function editDomainWindow (request)
 				result += '<td><input type="text" size="50" value="'+r.content+'" id="content['+i+']"></td>';
 				result += '<td><input type="text" size="2" value="'+r.prio+'" id="prio['+i+']"></td>';
 				result += '<td><input type="text" size="4" value="'+r.ttl+'" id="ttl['+i+']"></td>';
-				result += '<td><input type="button" onclick="removeRecord('+r.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', 2500);" value="delete record" id="delete['+i+']"></td>';
+				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', 2500);" value="delete record" id="delete['+i+']"></td>';
 				result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
 				result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
 				result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
@@ -271,11 +271,11 @@ function transferDomain (domainId, owner)
         });
 }
 
-function removeRecord (recordId)
+function removeRecord (recordId, domainId)
 {
 	if(confirm("Are you sure you want to delete the record?"))
 	{
-		new Ajax.Request(baseurl+"?p=removeRecord&recordId="+escape(recordId), 
+		new Ajax.Request(baseurl+"?p=removeRecord&recordId="+escape(recordId)+"&domainId="+escape(domainId), 
 		{
 			method:"get",
 			asynchronous:true,
