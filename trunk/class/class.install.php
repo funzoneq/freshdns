@@ -88,5 +88,25 @@ class install
 			$this->database->query_master($Q) or die ($this->database->error());
 		}
 	}
+	
+	function zonelessdomains ()
+	{
+		$query = "SELECT d.id FROM domains d
+		LEFT OUTER JOIN zones z ON z.domain_id=d.id;";
+		$query = $this->database->query_master($query) or die ($this->database->error());
+		
+		if($this->database->num_rows($query)==0)
+		{
+			return '';
+		}else
+		{
+			while($record=$this->database->fetch_array($query))
+			{
+				$return[] = $record;
+			}
+		
+			return $return;
+		}
+	}
 }
 ?>

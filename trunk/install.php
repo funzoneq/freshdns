@@ -133,7 +133,16 @@ $config[\'DNS\'][\'hostmaster\']					= \''.$_POST['hostmaster'].'\';
 			$_SESSION['level'] = 10;
 			
 			$manager = new manager ($config['database']);
-			$manager->addUser ($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], 10, 1);
+			$install = new install ($config['database']);
+			$userId = $manager->addUser ($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], 10, 1);
+			
+			// LET'S FIND SOME ZONELESS DOMAINS!
+			$records = $install->zonelessdomains();
+			foreach($records AS $r)
+			{
+				// ADD A ZONE FOR THAT SILLY DOMAIN
+				$manager->addZone($r['id'], $userId, "");
+			}
 			
 			session_destroy();
 			
