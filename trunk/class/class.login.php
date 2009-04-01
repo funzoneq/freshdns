@@ -14,7 +14,19 @@ class login
 	{
 		if(isset($_SESSION['userId'], $_SESSION['username'], $_SESSION['level']))
 		{
-			return true;
+			$query = "SELECT id FROM users WHERE username='".$this->database->escape_string($_SESSION['username'])."' AND
+			password='".$this->database->escape_string($_SESSION['password'])."' AND
+			level='".$this->database->escape_string($_SESSION['level'])."' AND id='".$this->database->escape_string($_SESSION['userId'])."'
+			AND active='1'";
+			$query = $this->database->query_slave($query);
+			if($this->database->num_rows($query)!=1)
+                	{
+                	        throw new Exception ("FakeLoginFound");
+				return false;
+                	}else
+			{
+				return true;
+			}
 		}else
 		{
 			return false;
@@ -23,7 +35,7 @@ class login
 	
 	function login ($username, $password)
 	{
-		$query = "SELECT id, fullname, level FROM users WHERE username='".$this->database->escape_string($username)."' AND password='".md5($this->database->escape_string($password))."' AND active='1'";
+		$query = "SELECT id, fullname, level, password FROM users WHERE username='".$this->database->escape_string($username)."' AND password='".md5($this->database->escape_string($password))."' AND active='1'";
 		$query = $this->database->query_slave($query);
 		
 		if($this->database->num_rows($query)!=1)
@@ -33,10 +45,11 @@ class login
 		{
 			$record = $this->database->fetch_array($query);
 			
-			$_SESSION['userId']		= $record['id'];
+			$_SESSION['userId']	= $record['id'];
 			$_SESSION['username']	= $record['fullname'];
-			$_SESSION['level']		= $record['level'];
+			$_SESSION['level']	= $record['level'];
 			$_SESSION['username']	= $username;
+			$_SESSION['password']	= $record['password'];
 			
 			return true;
 		}

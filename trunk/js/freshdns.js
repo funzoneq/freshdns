@@ -209,11 +209,11 @@ function editDomainWindow (request)
 				result += '<td><input type="text" size="50" value="'+r.content+'" id="content['+i+']"></td>';
 				result += '<td><input type="text" size="2" value="'+r.prio+'" id="prio['+i+']"></td>';
 				result += '<td><input type="text" size="4" value="'+r.ttl+'" id="ttl['+i+']"></td>';
-				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', 2500);" value="delete record" id="delete['+i+']"></td>';
+				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" value="delete record" id="delete['+i+']"></td>';
 				result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
 				result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
 				result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
-				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 2500);" id="save['+i+']" value="save"></td>';
+				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" id="save['+i+']" value="save"></td>';
 				result += '</tr>';
 			}
 			
@@ -238,7 +238,7 @@ function editDomainWindow (request)
 			result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';
 			result += '	   <td><input type="button" onclick="newRecord('+jsonData.domain.id+', document.getElementById(\'new[name]\').value, ';
 			result += 'document.getElementById(\'new[type]\').value, document.getElementById(\'new[content]\').value, ';
-			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 2500);" id="new[save]" value="save" />';
+			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" id="new[save]" value="save" />';
 			result += '	</tr></table></td>';
 			result += '  </tr>';
 
@@ -570,23 +570,22 @@ function saveUser (userId, username, password, fullname, email, description, lev
 
 function loginForm ()
 {
-	var result  = '<p><form><table>';
+	var result  = '<p><form method="post" action="index.php"><table>';
 	result += '  <tr>';
 	result += '	<td rowspan="4" width="70"><img src="images/agent.png" alt="Please login" /></td>';
 	result += '	<td colspan="3"><b>Login<span id="infoHead"></span></b></td>';
 	result += '  </tr>';
 	result += '  <tr>';
 	result += '	<td>Username:</td>';
-	result += '	<td><input type="text" id="usernamefield" /></td>';
+	result += '	<td><input type="text" id="usernamefield" tabindex="1" /></td>';
 	result += '	<td rowspan="2"><img src="images/forward.png" id="loginstatus" alt="login status" /></td>';
 	result += '  </tr>';
 	result += '  <tr>';
 	result += '	<td>Password:</td>';
-	result += '	<td><input type="password" id="passwordfield" /></td>';
+	result += '	<td><input type="password" id="passwordfield" tabindex="2" /></td>';
 	result += '  </tr>';
 	result += '  <tr>';
-	result += '	<td colspan="2"><input type="button" value="login" id="loginBtn" ';
-	result += '	onclick=\'login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\' /></td>';
+	result += '	<td colspan="2"><input type="button" value="login" tabindex="3" id="loginBtn" onclick=\'login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\' /></td>';
 	result += '  </tr>';
 	result += '</table></form></p>';
 	document.getElementById('login').innerHTML = result;

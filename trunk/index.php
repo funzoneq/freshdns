@@ -9,6 +9,15 @@ $login = new login($config['database']);
 $json = new Services_JSON();
 $manager = new manager($config['database']);
 
+try {
+	$login->isLoggedIn();
+}catch(Exception $ex)
+{
+	$login->logout();
+	header("Location: index.php");
+	exit;
+}
+
 if(!$login->isLoggedIn())
 // THE USER IS NOT LOGGED IN
 {
@@ -212,7 +221,7 @@ if(!$login->isLoggedIn())
 		case "newDomain":
 			try
 			{
-				$domainId = $manager->addDomain($_POST['domain'], $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
+				$domainId = $manager->addDomain(trim($_POST['domain']), $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 				$manager->addZone($domainId, $_POST['owner'], "");
 				
 				foreach($config['DNS']['templates'][$_POST['template']] AS $record)
@@ -251,7 +260,7 @@ if(!$login->isLoggedIn())
 			{
 				try
 				{
-					$domainId = $manager->addDomain($domain, $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
+					$domainId = $manager->addDomain(trim($domain), $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 					$manager->addZone($domainId, $_POST['owner'], "");
 					
 					foreach($config['DNS']['templates'][$_POST['template']] AS $record)
