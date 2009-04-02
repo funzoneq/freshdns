@@ -29,7 +29,7 @@ if(!$login->isLoggedIn())
 			echo '<div id="body">
 			<div id="info"><table>
 			  <tr>
-				<td rowspan="2" width="70"><img id="infoimg" src="http://www.freshlight.nl/images/info.png" alt="Welcome!" /></td>
+				<td rowspan="2" width="70"><img id="infoimg" src="./images/info.png" alt="Welcome!" /></td>
 				<td><b>Welcome to FreshDNS<span id="infoHead"></span></b></td>
 			  </tr>
 			  <tr>
