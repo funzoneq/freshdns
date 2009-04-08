@@ -10,13 +10,12 @@ define('VERSION',		'1.0.3');
 /*****************************************************/
 
 $config['mysql']['use']							= true;
-$config['mysql']['username']					= 'username';
-$config['mysql']['password']					= 'password';	
+$config['mysql']['username']					= 'pdns';
+$config['mysql']['password']					= 'RWTifOD';	
 $config['mysql']['database']					= 'pdns';
 $config['mysql']['master_host']					= 'localhost';
 $config['mysql']['slave_hosts']					= array('localhost','localhost'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-$config['mysql']['use_replication']				= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-
+$config['mysql']['use_replication']				= '0';	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 
 /*****************************************************/
 

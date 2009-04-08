@@ -20,10 +20,10 @@ class login
 			AND active='1'";
 			$query = $this->database->query_slave($query);
 			if($this->database->num_rows($query)!=1)
-                	{
-                	        throw new Exception ("FakeLoginFound");
+            {
+            	throw new Exception ("FakeLoginFound");
 				return false;
-                	}else
+            }else
 			{
 				return true;
 			}

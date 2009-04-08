@@ -16,7 +16,7 @@ class manager
 	
 	/* **************************************** */
 	
-	function addUser ($username, $password, $fullname, $email, $description, $level, $active)
+	function addUser ($username, $password, $fullname, $email, $description, $level, $active, $maxdomains)
 	{
 		if($_SESSION['level']<10)
 		{
@@ -24,10 +24,10 @@ class manager
 			return false;
 		}
 		
-		$query = "INSERT INTO `users` ( `id` , `username` , `password` , `fullname` , `email` , `description` , `level` , `active` ) VALUES
+		$query = "INSERT INTO `users` ( `id` , `username` , `password` , `fullname` , `email` , `description` , `level` , `active` , `maxdomains`) VALUES
 		('', '".$this->database->escape_string($username)."', '".$this->database->escape_string($password)."', '".$this->database->escape_string($fullname)."',
 		'".$this->database->escape_string($email)."', '".$this->database->escape_string($description)."', '".$this->database->escape_string($level)."',
-		'".$this->database->escape_string($active)."');";
+		'".$this->database->escape_string($active)."', '".$this->database->escape_string($maxdomains)."');";
 		
 		if($this->database->query_master($query))
 		{
@@ -52,7 +52,7 @@ class manager
 		}
 	}
 	
-	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active)
+	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains)
 	{
 		$query = "UPDATE `users`
 		SET `username`='".$this->database->escape_string($username)."',
@@ -69,7 +69,8 @@ class manager
 			$query .= " `password`='".$this->database->escape_string(md5($password))."',";
 		}
 		
-		$query .= " `id`='".$this->database->escape_string($userId)."' WHERE `id`='".$this->database->escape_string($orgUserId)."' LIMIT 1;";
+		$query .= " `id`='".$this->database->escape_string($userId)."', `maxdomains`='".$this->database->escape_string($maxdomains)."'
+		WHERE `id`='".$this->database->escape_string($orgUserId)."' LIMIT 1;";
 		
 		if($_SESSION['level']<5 && $_SESSION['userId']!=$orgUserId || $_SESSION['level']>=5)
 		{

@@ -1,3 +1,5 @@
+var timeoutInMilisec = 100;
+
 function resultError (request)
 {
 	alert('Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
@@ -209,11 +211,11 @@ function editDomainWindow (request)
 				result += '<td><input type="text" size="50" value="'+r.content+'" id="content['+i+']"></td>';
 				result += '<td><input type="text" size="2" value="'+r.prio+'" id="prio['+i+']"></td>';
 				result += '<td><input type="text" size="4" value="'+r.ttl+'" id="ttl['+i+']"></td>';
-				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" value="delete record" id="delete['+i+']"></td>';
+				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" value="delete record" id="delete['+i+']"></td>';
 				result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
 				result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
 				result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
-				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" id="save['+i+']" value="save"></td>';
+				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="save['+i+']" value="save"></td>';
 				result += '</tr>';
 			}
 			
@@ -238,7 +240,7 @@ function editDomainWindow (request)
 			result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';
 			result += '	   <td><input type="button" onclick="newRecord('+jsonData.domain.id+', document.getElementById(\'new[name]\').value, ';
 			result += 'document.getElementById(\'new[type]\').value, document.getElementById(\'new[content]\').value, ';
-			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', 100);" id="new[save]" value="save" />';
+			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="new[save]" value="save" />';
 			result += '	</tr></table></td>';
 			result += '  </tr>';
 
@@ -459,14 +461,14 @@ function showUserAdmin (request)
 	{
 		var jsonData = eval('('+request.responseText+')');
 		
-		var result = '<table width="800">';
+		var result = '<form name="addUserrrr"><table width="800">';
 		
 		for(i=0; i<jsonData.length; i++)
 		{
 			if(!(userlevel<5 && jsonData[i].id != myUserId))
 			{
 				result += '<tr>';
-				result += '  <td>[ <a onclick="deleteUser('+jsonData[i].id+');setTimeout(\'userAdmin();\', 2500);">delete user</a> ]</td>';
+				result += '  <td>[ <a onclick="deleteUser('+jsonData[i].id+');setTimeout(\'userAdmin();\', '+timeoutInMilisec+');">delete user</a> ]</td>';
 				result += '  <td><a href="javascript:editUser('+jsonData[i].id+');">'+jsonData[i].fullname+'</a></td>';
 				result += '  <td>'+jsonData[i].level+'</td>';
 				result += '</tr>';
@@ -481,15 +483,28 @@ function showUserAdmin (request)
 		result += '<tr><td>Full name</td><td colspan="2"><input type="text" id="fullname"></td></tr>';
 		result += '<tr><td>E-mail</td><td colspan="2"><input type="text" id="email"></td></tr>';
 		result += '<tr><td>Description</td><td colspan="2"><input type="text" id="description"></td></tr>';
-		result += '<tr><td>Level</td><td colspan="2"><input type="text" id="level"></td></tr>';
-		result += '<tr><td>Active</td><td colspan="2"><input type="text" id="active"></td></tr>';
+		result += '<tr><td>Max domains</td><td colspan="2"><input type="text" id="maxdomains" value="0"></td></tr>';
+		result += '<tr><td>Level</td><td colspan="2"><select id="level"><option value="1" selected="selected">normal user</option>';
+		result += '<option value="5">moderator</option><option value="10">administrator</option></td></tr>';
+		result += '<tr><td>Active</td><td colspan="2">Yes <input type="radio" name="activeBool" id="activeBool1" value="1" checked="checked" /> No <input type="radio" name="activeBool" id="activeBool0" value="0" /></td></tr>';
 		result += '<tr><td colspan="3"><input type="button" id="save" value="Add user" onclick="addUser(';
 		result += ' document.getElementById(\'username\').value, document.getElementById(\'password\').value, document.getElementById(\'passwordcheck\').value,';
 		result += ' document.getElementById(\'fullname\').value, document.getElementById(\'email\').value, document.getElementById(\'description\').value,';
-		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value);setTimeout(\'userAdmin();\', 2500);"></td></tr>';
-		result += '</table>';
+		result += ' document.getElementById(\'level\').value, checkActiveBool(document.getElementById(\'activeBool1\'),document.getElementById(\'activeBool0\')),document.getElementById(\'maxdomains\').value);setTimeout(\'userAdmin();\', '+timeoutInMilisec+');"></td></tr>';
+		result += '</table></form>';
 		
 		document.getElementById("body").innerHTML = result;
+	}
+}
+
+function checkActiveBool (bool0, bool1)
+{
+	if (bool0.checked)
+	{
+		return bool0.value;
+	}else
+	{
+		return bool1.value;
 	}
 }
 
@@ -532,36 +547,37 @@ function showEditUser (request)
 		result += '<tr><td>Full name</td><td><input type="text" id="fullname" value="'+jsonData.fullname+'"></td></tr>';
 		result += '<tr><td>E-mail</td><td><input type="text" id="email" value="'+jsonData.email+'"></td></tr>';
 		result += '<tr><td>Description</td><td><textarea id="description">'+jsonData.description+'</textarea></td></tr>';
+		result += '<tr><td>Max domains</td><td colspan="2"><input type="text" id="maxdomains" value="'+jsonData.maxdomains+'"></td></tr>';
 		result += '<tr><td>Level</td><td><input type="text" id="level" value="'+jsonData.level+'"></td></tr>';
 		result += '<tr><td>Active</td><td><input type="text" id="active" value="'+jsonData.active+'"></td></tr>';
 		result += '<tr><td><input type="button" name="save" value="Opslaan" onclick="javascript:saveUser(';
 		result += 'document.getElementById(\'userId\').value, document.getElementById(\'username\').value, document.getElementById(\'password\').value,';
 		result += ' document.getElementById(\'fullname\').value, document.getElementById(\'email\').value, document.getElementById(\'description\').value,';
-		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value);"></td><td></td></tr>';
+		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value, document.getElementById(\'maxdomains\').value);"></td><td></td></tr>';
 		result += '</table>';
 		
 		document.getElementById("body").innerHTML = result;
 	}
 }
 
-function addUser (username, password, passwordcheck, fullname, email, description, level, active)
+function addUser (username, password, passwordcheck, fullname, email, description, level, active, maxdomains)
 {
 	new Ajax.Request(baseurl+"?p=addUser", 
 	{
 		method:"post",
-		postBody:"username="+username+"&password="+password+"&passwordcheck="+passwordcheck+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active,
+		postBody:"username="+username+"&password="+password+"&passwordcheck="+passwordcheck+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains,
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
 	});
 }
 
-function saveUser (userId, username, password, fullname, email, description, level, active)
+function saveUser (userId, username, password, fullname, email, description, level, active, maxdomains)
 {
 	new Ajax.Request(baseurl+"?p=editUser", 
 	{
 		method:"post",
-		postBody:"userId="+userId+"&username="+username+"&password="+password+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active,
+		postBody:"userId="+userId+"&username="+username+"&password="+password+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains,
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -570,7 +586,7 @@ function saveUser (userId, username, password, fullname, email, description, lev
 
 function loginForm ()
 {
-	var result  = '<p><form method="post" action="index.php"><table>';
+	var result  = '<p><form method="post" action=\'javascript:login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\'><table>';
 	result += '  <tr>';
 	result += '	<td rowspan="4" width="70"><img src="images/agent.png" alt="Please login" /></td>';
 	result += '	<td colspan="3"><b>Login<span id="infoHead"></span></b></td>';
@@ -585,7 +601,7 @@ function loginForm ()
 	result += '	<td><input type="password" id="passwordfield" tabindex="2" /></td>';
 	result += '  </tr>';
 	result += '  <tr>';
-	result += '	<td colspan="2"><input type="button" value="login" tabindex="3" id="loginBtn" onclick=\'login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\' /></td>';
+	result += '	<td colspan="2"><input type="submit" value="login" tabindex="3" id="loginBtn" /></td>';
 	result += '  </tr>';
 	result += '</table></form></p>';
 	document.getElementById('login').innerHTML = result;
