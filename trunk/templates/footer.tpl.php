@@ -5,5 +5,7 @@
 <img src="./images/xhtml.png" width="80" height="15" alt="XHTML Rulez" /></a> <a href="http://code.google.com/p/freshdns/">
 <img src="./images/freshdns.png" width="80" height="15" alt="FreshDNS AJAX based, PowerDNS administration system" /></a></p></div>
 
+<div id="debug"></div>
+
 </body>
 </html>

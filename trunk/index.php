@@ -38,7 +38,7 @@ if(!$login->isLoggedIn())
 			</table></div>
 			<div class="leeg">&nbsp;</div>
 			<div id="login"></div></div>';
-				
+
 			echo '<script type="text/javascript" language="JavaScript1.2">loginForm();</script>';
 
 			include('./templates/footer.tpl.php');
@@ -110,7 +110,7 @@ if(!$login->isLoggedIn())
 					$manager->removeAllRecords($_GET['domainId']);
 					$manager->removeZoneByDomainId($_GET['domainId']);
 					$manager->removeDomain($_GET['domainId']);
-						
+
 					$return = array("status" => "success", "text" => "The zone has been deleted.");
 					echo $json->encode($return);
 				}catch(Exception $ex)
@@ -128,10 +128,10 @@ if(!$login->isLoggedIn())
 				echo $json->encode($return);
 				exit;
 			}
-				
+
 			$domain = $manager->getDomain($_GET['domainId']);
 			$records = $manager->getAllRecords($_GET['domainId']);
-				
+
 			$return = array('domain' => $domain, 'records' => $records);
 
 			echo $json->encode($return);
@@ -152,7 +152,7 @@ if(!$login->isLoggedIn())
 				echo $json->encode($return);
 			}
 			break;
-			
+
 		case "saveAllRecords":
 			try
 			{
@@ -160,9 +160,9 @@ if(!$login->isLoggedIn())
 				{
 					$manager->updateRecord ($recordId, $recordId, $_POST['domainId'], $_POST['name'][$rowId], $_POST['type'][$rowId], $_POST['content'][$rowId], $_POST['ttl'][$rowId], $_POST['prio'][$rowId], time(), false);
 				}
-				
+
 				$manager->updateSoaSerial($_POST['domainId']);
-				
+
 				$return = array("status" => "success", "text" => "All records have been updated.");
 				echo $json->encode($return);
 			}catch (Exception $ex)
@@ -228,12 +228,12 @@ if(!$login->isLoggedIn())
 
 		case "getTemplates":
 			$return = array();
-				
+
 			foreach($config['DNS']['templates'] AS $name => $values)
 			{
 				$return[] = $name;
 			}
-				
+
 			echo $json->encode($return);
 			break;
 
@@ -254,7 +254,7 @@ if(!$login->isLoggedIn())
 					$record['content']	= str_replace("{#MAILIP#}",		$_POST['mailIP'],				$record['content']);
 					$record['content']	= str_replace("{#HOSTMASTER#}", $config['DNS']['hostmaster'],	$record['content']);
 					$record['content']	= str_replace("{#SOACODE#}",	$manager->createNewSoaSerial(),	$record['content']);
-						
+
 					$manager->addRecord ($domainId, $record['name'], $record['type'], $record['content'], $record['ttl'], $record['prio'], $record['changeDate']);
 				}
 
@@ -274,14 +274,14 @@ if(!$login->isLoggedIn())
 			$domains = explode("\n", $_POST['domains']);
 			$succes = array();
 			$failed = array();
-				
+
 			foreach($domains AS $domain)
 			{
 				try
 				{
 					$domainId = $manager->addDomain(trim($domain), $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 					$manager->addZone($domainId, $_POST['owner'], "");
-						
+
 					foreach($config['DNS']['templates'][$_POST['template']] AS $record)
 					{
 						$record['name']		= str_replace("{#DOMAIN#}",		$domain,						$record['name']);
@@ -296,15 +296,15 @@ if(!$login->isLoggedIn())
 
 						$manager->addRecord ($domainId, $record['name'], $record['type'], $record['content'], $record['ttl'], $record['prio'], $record['changeDate']);
 					}
-						
+
 					$succes[] = "The domain ".$domain." has been added.";
-						
+
 				}catch (Exception $ex)
 				{
 					$failed[] = "Failed: The domain ".$domain." hasn't been added: ".$ex->getMessage()."\n";
 				}
 			}
-				
+
 			$return = array("status" => "success", "text" => implode("\n", $succes)."\n".implode("\n", $failed));
 			echo $json->encode($return);
 			break;

@@ -38,7 +38,7 @@ body {
 }
 
 #letters {
-	width: 790px;
+	width: 820px;
 	color: #4169e1;
 	font-size: 17px;
 	font-weight: bold;
@@ -301,6 +301,15 @@ ul#LSShadow {
      
      color: #564b47;  
      background-color: #ccc;
+}
+
+#debug {
+	width: 800px;
+	height: 200px;
+	border: 1px dashed #ff9e9e;
+	margin: 0 auto;
+	background-color: #fddede;
+	display: none;
 }
 
 td {

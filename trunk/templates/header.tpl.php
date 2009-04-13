@@ -38,7 +38,12 @@
 	<a href="javascript:list('n');">N</a> <a href="javascript:list('o');">O</a> <a href="javascript:list('p');">P</a> <a href="javascript:list('q');">Q</a> <a href="javascript:list('r');">R</a>
 	<a href="javascript:list('s');">S</a> <a href="javascript:list('t');">T</a> <a href="javascript:list('u');">U</a> <a href="javascript:list('v');">V</a> <a href="javascript:list('w');">W</a>
 	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:bulkNewDomain();">BULK</a>
-	<a href="javascript:userAdmin();">USERS</a> <a href="index.php?p=logout">LOGOUT</a>
+	<? if($_SESSION['level'] < 10) { ?>
+	<a href="javascript:editUser(<?=$_SESSION['userId']?>);">PROFILE</a> 
+	<? }else{ ?>
+	<a href="javascript:userAdmin();">USERS</a> 
+	<? } ?>
+	<a href="index.php?p=logout">LOGOUT</a>
 	<? }else{ echo "&nbsp;"; } ?></div>
 	<div id="search">
 	<? if($login->isLoggedIn()){ ?>

@@ -7,7 +7,8 @@ function resultError (request)
 
 function resultDebug (request)
 {
-	document.getElementById("query").innerHTML = request.responseText;
+	document.getElementById("debug").style.display = 'inline';
+	document.getElementById("debug").innerHTML = request.responseText;
 }
 
 function dummy ()
@@ -456,7 +457,8 @@ function changeTemplateSelect (request)
 }
 
 function saveNewRecord (domain, webIP, mailIP, owner, template)
-{
+{	
+
 	new Ajax.Request(baseurl+"?p=newDomain", 
 	{
 		method:"post",
