@@ -5,6 +5,11 @@ function resultError (request)
 	alert('Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
 }
 
+function resultDebug (request)
+{
+	document.getElementById("query").innerHTML = request.responseText;
+}
+
 function dummy ()
 {
 	return true;
@@ -199,7 +204,8 @@ function editDomainWindow (request)
 			result += '	<td><h1>Edit domain :: '+jsonData.domain.name+' ('+jsonData.records.length+')</h1></td>';
 			result += '  </tr>';
 			result += '  <tr>';
-			result += '	<td><table>';
+			result += '	<td><form name="editDomain" action="javascript:saveAllRecords(document.editDomain);">';
+			result += '	<input type="hidden" id="domainId" value="'+jsonData.domain.id+'" /><table>';
 			result += '	<tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>';
 			
 			for(i=0; i<jsonData.records.length; i++)
@@ -219,7 +225,7 @@ function editDomainWindow (request)
 				result += '</tr>';
 			}
 			
-			result += '	</table></td>';
+			result += '	<tr><td colspan="7"><input type="submit" value="save all changes"></td></tr></table></form></td>';
 			result += '  </tr>';
 			result += '  <tr>';
 			result += '	<td><h1>Add a record</h1></td>';
@@ -247,18 +253,47 @@ function editDomainWindow (request)
 			if(userlevel >= 5)
 			{
 				result += '  <tr>';
-                        	result += '     <td><h1>Transfer domain</h1></td>';
-                        	result += '  </tr>';
-                        	result += '  <tr>';
-                        	result += '    <td>Transfer domain to <select id="owner"></select>';
+                result += '     <td><h1>Transfer domain</h1></td>';
+                result += '  </tr>';
+                result += '  <tr>';
+                result += '    <td>Transfer domain to <select id="owner"></select>';
 				result += ' <input type="button" onclick="transferDomain('+jsonData.domain.id+', document.getElementById(\'owner\').value);" value="transfer" /></td>';
-                        	result += '  </tr>';
+                result += '  </tr>';
 				result += '</table></p>';
 			}
 			
 			document.getElementById('body').innerHTML = result;
 		}
 	}
+}
+
+function saveAllRecords (input)
+{
+	var postBody = 'dummy=true';
+	
+	for(i=0; i<input.length; i++)
+	{
+		var ident = input[i].id;
+		var value = input[i].value;
+		
+		if(ident == "domainId")
+		{
+			var domainId = value;
+		}
+		
+		postBody += '&'+escape(ident)+'='+escape(value);
+	}
+	
+	new Ajax.Request(baseurl+"?p=saveAllRecords",
+    {
+    	method:"post",
+		postBody:postBody,
+		asynchronous:true,
+		onSuccess:succesFailed,
+		onFailure:resultError
+	});
+	
+	setTimeout('editDomain('+domainId+');', timeoutInMilisec);
 }
 
 function transferDomain (domainId, owner)

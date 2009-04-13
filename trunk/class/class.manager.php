@@ -421,7 +421,7 @@ class manager
 		}
 	}
 	
-	function updateRecord ($orgRecordId, $recordId, $domainId, $name, $type, $content, $ttl, $prio, $changeDate)
+	function updateRecord ($orgRecordId, $recordId, $domainId, $name, $type, $content, $ttl, $prio, $changeDate, $updateSerial = true)
 	{
 		$query = "UPDATE `records` SET
 		`id` = '".$this->database->escape_string($recordId)."', `domain_id` = '".$this->database->escape_string($domainId)."',
@@ -432,8 +432,11 @@ class manager
 
 		if($this->database->query_master($query))
 		{
-			// UPDATE THE SOA SERIAL
-			$this->updateSoaSerial($domainId);
+			if($updateSerial)
+			{
+				// UPDATE THE SOA SERIAL
+				$this->updateSoaSerial($domainId);
+			}
 			
 			return true;
 		}else
@@ -527,7 +530,7 @@ class manager
 		$record		= $this->database->fetch_array($query);
 		$soa		= explode(" ", $record['content']);
 		
-		if(substr($soa[2], -2, 2)==99) // IF THE SOA == 99 (max) THEN CREATE A NEW SOA
+		if(substr($soa[2], 0, 8) != date("Ymd")) // IF THE SOA ISN'T OF TODAY THEN CREATE A NEW SOA
 		{
 			$soa[2] = $this->createNewSoaSerial();
 		}else // SOA + 1

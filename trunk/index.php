@@ -142,9 +142,28 @@ if(!$login->isLoggedIn())
 		case "saveRecord":
 			try
 			{
-				$manager->updateRecord($_POST['recordId'], $_POST['recordId'], $_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], $_POST['changeDate']);
+				$manager->updateRecord($_POST['recordId'], $_POST['recordId'], $_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], time());
 
 				$return = array("status" => "success", "text" => "The record has been updated.");
+				echo $json->encode($return);
+			}catch (Exception $ex)
+			{
+				$return = array("status" => "failed", "text" => $ex->getMessage());
+				echo $json->encode($return);
+			}
+			break;
+			
+		case "saveAllRecords":
+			try
+			{
+				foreach($_POST['id'] AS $rowId => $recordId)
+				{
+					$manager->updateRecord ($recordId, $recordId, $_POST['domainId'], $_POST['name'][$rowId], $_POST['type'][$rowId], $_POST['content'][$rowId], $_POST['ttl'][$rowId], $_POST['prio'][$rowId], time(), false);
+				}
+				
+				$manager->updateSoaSerial($_POST['domainId']);
+				
+				$return = array("status" => "success", "text" => "All records have been updated.");
 				echo $json->encode($return);
 			}catch (Exception $ex)
 			{
