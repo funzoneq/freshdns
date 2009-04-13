@@ -61,7 +61,7 @@ class manager
 
 		if($_SESSION['level']>5)
 		{
-			$query .= " `level`='".$this->database->escape_string($level)."', `active`='".$this->database->escape_string($active)."',";
+			$query .= " `level`='".$this->database->escape_string($level)."', `active`='".$this->database->escape_string($active)."', `maxdomains`='".$this->database->escape_string($maxdomains)."',";
 		}
 
 		if($password!="")
@@ -69,7 +69,7 @@ class manager
 			$query .= " `password`='".$this->database->escape_string(md5($password))."',";
 		}
 
-		$query .= " `id`='".$this->database->escape_string($userId)."', `maxdomains`='".$this->database->escape_string($maxdomains)."'
+		$query .= " `id`='".$this->database->escape_string($userId)."'
 		WHERE `id`='".$this->database->escape_string($orgUserId)."' LIMIT 1;";
 
 		if($_SESSION['level']<5 && $_SESSION['userId']!=$orgUserId || $_SESSION['level']>=5)
