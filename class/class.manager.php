@@ -441,7 +441,7 @@ class manager
 		{
 			// UPDATE THE SOA SERIAL
 			$this->updateSoaSerial($domainId);
-				
+
 			return mysql_insert_id();
 		}else
 		{
@@ -454,9 +454,9 @@ class manager
 		$query = "UPDATE `records` SET
 		`id` = '".$this->database->escape_string($recordId)."', `domain_id` = '".$this->database->escape_string($domainId)."',
 		`name` = '".$this->database->escape_string($name)."', `type` = '".$this->database->escape_string($type)."',
-		`content` = '".$this->database->escape_string($content)."', `ttl` = '".$this->database->escape_string($ttl)."', 
+		`content` = '".$this->database->escape_string($content)."', `ttl` = '".$this->database->escape_string($ttl)."',
 		`prio` = '".$this->database->escape_string($prio)."', `change_date` = '".$this->database->escape_string($changeDate)."'
-		WHERE `id` = '".$this->database->escape_string($orgRecordId)."' LIMIT 1;";	
+		WHERE `id` = '".$this->database->escape_string($orgRecordId)."' LIMIT 1;";
 
 		if($this->database->query_master($query))
 		{
@@ -465,7 +465,7 @@ class manager
 				// UPDATE THE SOA SERIAL
 				$this->updateSoaSerial($domainId);
 			}
-				
+
 			return true;
 		}else
 		{
@@ -488,7 +488,7 @@ class manager
 		{
 			// UPDATE THE SOA SERIAL
 			$this->updateSoaSerial($domainId);
-				
+
 			return true;
 		}else
 		{

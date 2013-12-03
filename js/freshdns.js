@@ -159,7 +159,7 @@ function deleteZone (domainId)
 {
 	if(confirm("Are you sure you want to delete this domain?"))
 	{
-		new Ajax.Request(baseurl+"?p=deleteZone&domainId="+escape(domainId), 
+		new Ajax.Request(baseurl+"?p=deleteZone&domainId="+encodeURIComponent(domainId), 
 		{
 			method:"get",
 			asynchronous:true,
@@ -171,7 +171,7 @@ function deleteZone (domainId)
 
 function editDomain (domainId)
 {
-	new Ajax.Request(baseurl+"?p=getDomainInfo&domainId="+escape(domainId), 
+	new Ajax.Request(baseurl+"?p=getDomainInfo&domainId="+encodeURIComponent(domainId), 
 	{
 		method:"get",
 		asynchronous:true,
@@ -282,7 +282,7 @@ function saveAllRecords (input)
 			var domainId = value;
 		}
 		
-		postBody += '&'+escape(ident)+'='+escape(value);
+		postBody += '&'+encodeURIComponent(ident)+'='+encodeURIComponent(value);
 	}
 	
 	new Ajax.Request(baseurl+"?p=saveAllRecords",
@@ -302,7 +302,7 @@ function transferDomain (domainId, owner)
 	new Ajax.Request(baseurl+"?p=transferDomain",
         {
                 method:"post",
-                postBody:"domainId="+escape(domainId)+"&owner="+escape(owner),
+                postBody:"domainId="+encodeURIComponent(domainId)+"&owner="+encodeURIComponent(owner),
                 asynchronous:true,
                 onSuccess:succesFailed,
                 onFailure:resultError
@@ -313,7 +313,7 @@ function removeRecord (recordId, domainId)
 {
 	if(confirm("Are you sure you want to delete the record?"))
 	{
-		new Ajax.Request(baseurl+"?p=removeRecord&recordId="+escape(recordId)+"&domainId="+escape(domainId), 
+		new Ajax.Request(baseurl+"?p=removeRecord&recordId="+encodeURIComponent(recordId)+"&domainId="+encodeURIComponent(domainId), 
 		{
 			method:"get",
 			asynchronous:true,
@@ -328,7 +328,7 @@ function saveRecord(domainId, recordId, name, type, content, prio, ttl)
 	new Ajax.Request(baseurl+"?p=saveRecord", 
 	{
 		method:"post",
-		postBody:"domainId="+escape(domainId)+"&recordId="+escape(recordId)+"&name="+escape(name)+"&type="+escape(type)+"&content="+escape(content)+"&prio="+escape(prio)+"&ttl="+escape(ttl),
+		postBody:"domainId="+encodeURIComponent(domainId)+"&recordId="+encodeURIComponent(recordId)+"&name="+encodeURIComponent(name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -340,7 +340,7 @@ function newRecord (domainId, name, type, content, prio, ttl)
 	new Ajax.Request(baseurl+"?p=newRecord", 
 	{
 		method:"post",
-		postBody:"domainId="+escape(domainId)+"&name="+escape(name)+"&type="+escape(type)+"&content="+escape(content)+"&prio="+escape(prio)+"&ttl="+escape(ttl),
+		postBody:"domainId="+encodeURIComponent(domainId)+"&name="+encodeURIComponent(name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -462,7 +462,7 @@ function saveNewRecord (domain, webIP, mailIP, owner, template)
 	new Ajax.Request(baseurl+"?p=newDomain", 
 	{
 		method:"post",
-		postBody:"domain="+escape(domain)+"&webIP="+escape(webIP)+"&mailIP="+escape(mailIP)+"&owner="+escape(owner)+"&template="+escape(template),
+		postBody:"domain="+encodeURIComponent(domain)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -474,7 +474,7 @@ function saveNewDomains (domains, webIP, mailIP, owner, template)
 	new Ajax.Request(baseurl+"?p=newDomains", 
 	{
 		method:"post",
-		postBody:"domains="+escape(domains)+"&webIP="+escape(webIP)+"&mailIP="+escape(mailIP)+"&owner="+escape(owner)+"&template="+escape(template),
+		postBody:"domains="+encodeURIComponent(domains)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -649,7 +649,7 @@ function login (username, password)
 	new Ajax.Request(baseurl+"?p=doLogin", 
 	{
 		method:"post",
-		postBody:"username="+escape(username)+"&password="+escape(password),
+		postBody:"username="+encodeURIComponent(username)+"&password="+encodeURIComponent(password),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
