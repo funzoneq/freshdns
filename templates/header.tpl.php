@@ -39,7 +39,7 @@
 	<a href="javascript:list('s');">S</a> <a href="javascript:list('t');">T</a> <a href="javascript:list('u');">U</a> <a href="javascript:list('v');">V</a> <a href="javascript:list('w');">W</a>
 	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:bulkNewDomain();">BULK</a>
 	<?php if($_SESSION['level'] < 10) { ?>
-	<a href="javascript:editUser(<?php=$_SESSION['userId']?>);">PROFILE</a> 
+	<a href="javascript:editUser(<?php echo $_SESSION['userId']?>);">PROFILE</a> 
 	<?php }else{ ?>
 	<a href="javascript:userAdmin();">USERS</a> 
 	<?php } ?>
@@ -48,7 +48,7 @@
 	<div id="search">
 	<?php if($login->isLoggedIn()){ ?>
 	<form style="margin:0px;" name="searchform" method="get" action="index.php" id="searchform">
-	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?php=$_GET['q']?>"></form>
+	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?php echo $_GET['q']?>"></form>
 	<?php } ?></div>
 </div>
 

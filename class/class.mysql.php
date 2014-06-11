@@ -43,7 +43,7 @@ class mysql extends database {
 		// CONNECT TO MYSQL
 		$this->setstats();
 		if(!$this->connect_to_mysql()){
-			throw new Exception("No mysql connection was made");
+			printf("No mysql connection was made");
 		}
 	}
 	
@@ -52,12 +52,7 @@ class mysql extends database {
 
 		/* check connection */
 		if ($this->slave->connect_errno) {
-		    throw new Exception(printf("Connect failed: %s\n", $this->slave->connect_error));
-		    return FALSE;
-		}
-
-		if (!$this->slave->query("SET a=1")) {
-		    throw new Exception(printf("Errormessage: %s\n", $this->slave->error));
+			printf("Connect failed: %s\n", $this->slave->connect_error);
 			return FALSE;
 		}
 		
@@ -77,17 +72,12 @@ class mysql extends database {
 		
 			/* check connection */
 			if ($this->master->connect_errno) {
-			    throw new Exception(printf("Connect failed: %s\n", $this->master->connect_error));
-			    return FALSE;
-			}
-
-			if (!$this->master->query("SET a=1")) {
-			    throw new Exception(printf("Errormessage: %s\n", $this->master->error));
+				printf("Connect failed: %s\n", $this->master->connect_error);
 				return FALSE;
 			}
 		
 			if(!$this->master){
-				throw new Exception("No master connection");
+				printf("No master connection");
 				return FALSE;
 			}else{
 				return $this->master->host_info;
@@ -100,8 +90,13 @@ class mysql extends database {
 	}
 	
 	function disconnect_mysql (){
-		$this->master->close();
-		$this->slave->close();
+		if ( is_object($this->master) && $this->master != $this->slave ) { 
+			$this->master->close(); 
+		}
+		
+		if ( is_object($this->slave) ) { 
+			$this->slave->close();
+		}
 	}
 	
 	/*****************************************************/
@@ -152,8 +147,8 @@ class mysql extends database {
 	
 	function showstats (){
 		$return = array(
-		'masterQ' => $this->NRmasterQ,
-		'slaveQ' => $this->NRslaveQ
+			'masterQ' => $this->NRmasterQ,
+			'slaveQ' => $this->NRslaveQ
 		);
 		
 		return $return;

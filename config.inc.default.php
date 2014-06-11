@@ -13,8 +13,8 @@ $config['mysql']['use']							= true;
 $config['mysql']['username']					= 'username';
 $config['mysql']['password']					= 'password';	
 $config['mysql']['database']					= 'pdns';
-$config['mysql']['master_host']					= 'localhost';
-$config['mysql']['slave_hosts']					= array('localhost','localhost'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config['mysql']['master_host']					= '127.0.0.1';
+$config['mysql']['slave_hosts']					= array('127.0.0.1','127.0.0.1'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 $config['mysql']['use_replication']				= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 
 

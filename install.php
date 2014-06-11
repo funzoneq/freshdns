@@ -13,7 +13,7 @@ switch($_GET['p'])
 		  </tr>
 		  <tr>
 		    <td>Database host:</td>
-			<td><input type="text" name="db_host" value="localhost"></td>
+			<td><input type="text" name="db_host" value="127.0.0.1"></td>
 		  </tr>
 		  <tr>
 		    <td>Database username:</td>
