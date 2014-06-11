@@ -7,7 +7,7 @@ FreshDNS AJAX based, PowerDNS administration system
 # Installation
 Upload the files to /var/www/freshdns/ and go to http://localhost/freshdns/install.php
 
-Replace the values from installation with the default values of config.inc.php
+Replace the default values of config.inc.php with the values from installation 
 
     cp config.inc.default.php config.inc.php
     vi config.inc.php
