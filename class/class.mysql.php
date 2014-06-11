@@ -1,4 +1,4 @@
-<?
+<?php
 class mysql extends database {
 	private $master;
 	private $slave;

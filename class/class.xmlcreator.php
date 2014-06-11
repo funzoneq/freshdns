@@ -1,4 +1,4 @@
-<?
+<?php
 class xmlcreator {
 	var $content;
 
@@ -15,7 +15,7 @@ class xmlcreator {
 	function addHeader()
 	{
 		//header('Content-Type: application/xml');
-		$this->content .= "<?xml version=\"1.0\"?>\n";
+		$this->content .= "<?phpxml version=\"1.0\"?>\n";
 	}
 	
 	function addTag ($tagName, $tagLevel)

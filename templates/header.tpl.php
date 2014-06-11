@@ -9,7 +9,7 @@
 	<script type="text/javascript">
 	var liveSearchRoot = baseurl;
 	var liveSearchRootSubDir = "/";
-	<?
+	<?php
 	echo "var userlevel='".$_SESSION['level']."';\n";
 	echo "var myUserId='".$_SESSION['userId']."';\n";
 	?>
@@ -31,25 +31,25 @@
 
 <div id="navbar">
 	<div id="letters">
-	<? if($login->isLoggedIn()){ ?>
+	<?php if($login->isLoggedIn()){ ?>
 	<a href="javascript:list('[0-9]');">0-9</a> <a href="javascript:list('a');">A</a> <a href="javascript:list('b');">B</a> <a href="javascript:list('c');">C</a>
 	<a href="javascript:list('d');">D</a> <a href="javascript:list('e');">E</a> <a href="javascript:list('f');">F</a> <a href="javascript:list('g');">G</a> <a href="javascript:list('h');">H</a>
 	<a href="javascript:list('i');">I</a> <a href="javascript:list('j');">J</a> <a href="javascript:list('k');">K</a> <a href="javascript:list('l');">L</a> <a href="javascript:list('m');">M</a>
 	<a href="javascript:list('n');">N</a> <a href="javascript:list('o');">O</a> <a href="javascript:list('p');">P</a> <a href="javascript:list('q');">Q</a> <a href="javascript:list('r');">R</a>
 	<a href="javascript:list('s');">S</a> <a href="javascript:list('t');">T</a> <a href="javascript:list('u');">U</a> <a href="javascript:list('v');">V</a> <a href="javascript:list('w');">W</a>
 	<a href="javascript:list('x');">X</a> <a href="javascript:list('y');">Y</a> <a href="javascript:list('z');">Z</a> <a href="javascript:newDomain();">NEW</a> <a href="javascript:bulkNewDomain();">BULK</a>
-	<? if($_SESSION['level'] < 10) { ?>
-	<a href="javascript:editUser(<?=$_SESSION['userId']?>);">PROFILE</a> 
-	<? }else{ ?>
+	<?php if($_SESSION['level'] < 10) { ?>
+	<a href="javascript:editUser(<?php=$_SESSION['userId']?>);">PROFILE</a> 
+	<?php }else{ ?>
 	<a href="javascript:userAdmin();">USERS</a> 
-	<? } ?>
+	<?php } ?>
 	<a href="index.php?p=logout">LOGOUT</a>
-	<? }else{ echo "&nbsp;"; } ?></div>
+	<?php }else{ echo "&nbsp;"; } ?></div>
 	<div id="search">
-	<? if($login->isLoggedIn()){ ?>
+	<?php if($login->isLoggedIn()){ ?>
 	<form style="margin:0px;" name="searchform" method="get" action="index.php" id="searchform">
-	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?=$_GET['q']?>"></form>
-	<? } ?></div>
+	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?php=$_GET['q']?>"></form>
+	<?php } ?></div>
 </div>
 
 <div id="body">

@@ -1,4 +1,4 @@
-<?
+<?php
 // THEORATICALLY THIS SHOULD WORK?!
 
 class postgresql extends database {

@@ -1,4 +1,4 @@
-<?
+<?php
 switch($_GET['p'])
 {
 	default:

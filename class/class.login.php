@@ -1,4 +1,4 @@
-<?
+<?php
 class login
 {
 	private $database;

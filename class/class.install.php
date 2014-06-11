@@ -1,4 +1,4 @@
-<?
+<?php
 class install 
 {
 	private $database;

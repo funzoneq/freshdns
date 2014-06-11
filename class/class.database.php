@@ -1,4 +1,4 @@
-<?
+<?php
 abstract class database
 {	
 	abstract function initiate ();
