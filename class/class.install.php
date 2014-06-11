@@ -61,7 +61,7 @@ class install
 		  `user_id` int(11) NOT NULL default '0',
 		  `record_id` int(11) NOT NULL default '0',
 		  PRIMARY KEY  (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
 		$query[] = "CREATE TABLE IF NOT EXISTS `users` (
 		  `id` int(11) NOT NULL auto_increment,
@@ -73,7 +73,7 @@ class install
 		  `level` tinyint(3) NOT NULL default '0',
 		  `active` tinyint(1) NOT NULL default '0',
 		  PRIMARY KEY  (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
 		$query[] = "CREATE TABLE IF NOT EXISTS `zones` (
 		  `id` int(11) NOT NULL auto_increment,
@@ -81,7 +81,28 @@ class install
 		  `owner` int(11) NOT NULL default '0',
 		  `comment` text,
 		  PRIMARY KEY  (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+    
+		$query[] = "ALTER TABLE `users` ADD `maxdomains` SMALLINT( 5 ) NOT NULL;";
+
+		$query[] = "CREATE TABLE IF NOT EXISTS `template` (
+		  `templateId` int(11) NOT NULL AUTO_INCREMENT,
+		  `userId` int(11) NOT NULL,
+		  `name` varchar(255) NOT NULL,
+		  PRIMARY KEY (`templateId`)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+
+		$query[] = "CREATE TABLE IF NOT EXISTS `template_records` (
+		  `recordId` int(11) NOT NULL AUTO_INCREMENT,
+		  `templateId` int(11) NOT NULL,
+		  `name` varchar(255) NOT NULL,
+		  `type` varchar(50) NOT NULL,
+		  `content` varchar(255) NOT NULL,
+		  `prio` smallint(5) NOT NULL,
+		  `ttl` int(11) NOT NULL,
+		  PRIMARY KEY (`recordId`),
+		  KEY `templateId` (`templateId`)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
 		foreach($query AS $Q)
 		{
