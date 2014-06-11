@@ -48,17 +48,24 @@ class mysql extends database {
 	}
 	
 	function connect_to_mysql (){
-		// CONNECT TO A SLAVE
-		$this->slave = mysql_connect($this->SS_MySQLserver, $this->username, $this->password) or die (mysql_error());
+		$this->slave = new mysqli($this->SS_MySQLserver, $this->username, $this->password, $this->database);
+
+		/* check connection */
+		if ($this->slave->connect_errno) {
+		    throw new Exception(printf("Connect failed: %s\n", $this->slave->connect_error));
+		    return FALSE;
+		}
+
+		if (!$this->slave->query("SET a=1")) {
+		    throw new Exception(printf("Errormessage: %s\n", $this->slave->error));
+			return FALSE;
+		}
 		
 		if(!$this->slave){
 			throw new Exception("No slave connection");
 			return FALSE;
-		}elseif(!@mysql_select_db ($this->database, $this->slave)){
-			throw new Exception("Failed to select the database");
-			return FALSE;
 		}else{
-			return mysql_get_host_info($this->slave);
+			return $this->slave->host_info;
 		}
 	}
 	
@@ -66,14 +73,24 @@ class mysql extends database {
 		if($this->replication==1)
 		{
 			// CONNECT TO THE MASTER
-			$this->master = mysql_connect($this->SS_masterMySQLserver, $this->username, $this->password) or die (mysql_error());
+			$this->master = new mysqli($this->SS_MySQLserver, $this->username, $this->password, $this->database);
+		
+			/* check connection */
+			if ($this->master->connect_errno) {
+			    throw new Exception(printf("Connect failed: %s\n", $this->master->connect_error));
+			    return FALSE;
+			}
+
+			if (!$this->master->query("SET a=1")) {
+			    throw new Exception(printf("Errormessage: %s\n", $this->master->error));
+				return FALSE;
+			}
 		
 			if(!$this->master){
-				return FALSE;
-			}elseif(!@mysql_select_db ($this->database, $this->master)){
+				throw new Exception("No master connection");
 				return FALSE;
 			}else{
-				return @mysql_get_host_info($this->master);
+				return $this->master->host_info;
 			}
 		}else
 		{
@@ -83,8 +100,8 @@ class mysql extends database {
 	}
 	
 	function disconnect_mysql (){
-		@mysql_close($this->master);
-		@mysql_close($this->slave);
+		$this->master->close();
+		$this->slave->close();
 	}
 	
 	/*****************************************************/
@@ -96,7 +113,7 @@ class mysql extends database {
 		}
 		
 		$this->NRslaveQ++;
-		$query = mysql_query($query, $this->slave);
+		$query = $this->slave->query($query);
 		return $query;
 	}
 	
@@ -107,7 +124,7 @@ class mysql extends database {
 		}
 		
 		$this->NRmasterQ++;
-		$query = mysql_query($query, $this->master);
+		$query = $this->master->query($query);
 		return $query;
 	}
 	
@@ -118,17 +135,17 @@ class mysql extends database {
 	
 	function fetch_array($query)
 	{
-		return mysql_fetch_array($query);
+		return $query->fetch_array($query);
 	}
 	
 	function num_rows ($query)
 	{
-		return mysql_num_rows($query);
+		return $query->num_rows($query);
 	}
 	
 	function escape_string ($string)
 	{
-		return mysql_real_escape_string($string);
+		return $this->master->real_escape_string($string);
 	}
 	
 	/*****************************************************/
