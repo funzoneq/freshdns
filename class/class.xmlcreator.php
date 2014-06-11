@@ -15,7 +15,7 @@ class xmlcreator {
 	function addHeader()
 	{
 		//header('Content-Type: application/xml');
-		$this->content .= "<?phpxml version=\"1.0\"?>\n";
+		$this->content .= "<?xml version=\"1.0\"?>\n";
 	}
 	
 	function addTag ($tagName, $tagLevel)
