@@ -234,7 +234,7 @@ function editDomainWindow (request)
 			result += '  <tr>';
 			result += '	   <td><table>';
 			result += '	   <tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td></tr>';
-			result += '    <tr><td><input type="text" value="'+r.name+'" id="new[name]" /></td>';
+			result += '    <tr><td><input type="text" value="'+jsonData.domain.name+'" id="new[name]" /></td>';
 			result += '    <td><select id="new[type]"><option selected="selected" value="A">A</option>';
 			result += '    <option value="AAAA">AAAA</option><option value="CNAME">CNAME</option>';
 			result += '    <option value="HINFO">HINFO</option><option value="MX">MX</option>';
