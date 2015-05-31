@@ -11,6 +11,8 @@ body {
 	
 }
 
+#message { position: fixed; top: 60px; right: 20px; width: 200px; }
+
 #logo {
         margin: -5px 10px 0 0;
 	float: left;

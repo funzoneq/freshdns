@@ -31,32 +31,37 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#" onclick="list('');return false;"><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
+      <a class="navbar-brand" href=""><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
     </div>
 
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <?php if($login->isLoggedIn()){ ?>
       <ul class="nav navbar-nav">
-	<?php if($login->isLoggedIn()){ ?>
-	<li><a href="javascript:newDomain();">NEW</a></li>
-	<li><a href="javascript:bulkNewDomain();">BULK</a></li>
+	<li><a href="javascript:newDomain();">New Domain</a></li>
+	<li><a href="javascript:bulkNewDomain();">Bulk Create</a></li>
 	<?php if($_SESSION['level'] < 10) { ?>
-	<li><a href="javascript:editUser(<?php echo $_SESSION['userId']; ?>);">PROFILE</a> </li>
 	<?php }else{ ?>
-	<li><a href="javascript:userAdmin();">USERS</a> </li>
+	<li><a href="javascript:list('');">All domains</a> </li>
+	<li><a href="javascript:userAdmin();">Users</a> </li>
 	<?php } ?>
-	<li><a href="index.php?p=logout">LOGOUT</a></li>
-	<?php }else{ echo "&nbsp;"; } ?>
-
 
       </ul>
 
-	<?php if($login->isLoggedIn()){ ?>
+	<ul class="nav navbar-nav pull-right">
+	  <li><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> <?= $_SESSION[ "username" ]?> <span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+	    <li><a href="javascript:editUser(<?php echo $_SESSION['userId']; ?>);">Profile</a> </li>
+            <li><a href="index.php?p=logout">Logout</a></li>
+          </ul></li>
+	</ul>
+
 	<form name="searchform" method="get" action="index.php" id="searchform" class="navbar-form navbar-right" role="search">
         <div class="form-group">
 	<input id="livesearch" name="q" type="text" onkeypress="liveSearchStart()" value="<?php echo $_GET['q']; ?>" class="form-control" placeholder="Search">
 	</div></form>
+
 	<?php } ?>
 
     </div>
@@ -72,6 +77,8 @@
 	<?php for($i=0x41;$i<=0x40+26; $i++) { ?> <li><a href="javascript:list('<?=chr($i)?>');"><?= chr($i)?></a></li><?php } ?>
 	<?php } ?>
 	</ul>
+
+<div id="message"></div>
 
 <div id="body">
 

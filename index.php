@@ -70,11 +70,10 @@ if(!$login->isLoggedIn())
 		case "frontpage":
 			include('./templates/header.tpl.php');
 
-			//echo '<div id="list"></div>';
-
 			if(!isset($_GET['q']))
 			{
-				echo '<script type="text/javascript" language="JavaScript1.2">list(\'A\');</script>';
+				//echo '<script type="text/javascript" language="JavaScript1.2">list(\'\');</script>';
+				echo '<script> ownersList(myUserId) </script>';
 			}else
 			{
 				echo '<script type="text/javascript" language="JavaScript1.2">liveSearchStart();</script>';
@@ -143,7 +142,9 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$manager->updateRecord($_POST['recordId'], $_POST['recordId'], $_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], time());
-
+				
+				touch("/opt/powerdns_copy/last_change");
+				
 				$return = array("status" => "success", "text" => "The record has been updated.");
 				echo $json->encode($return);
 			}catch (Exception $ex)
@@ -163,6 +164,8 @@ if(!$login->isLoggedIn())
 
 				$manager->updateSoaSerial($_POST['domainId']);
 
+				touch("/opt/powerdns_copy/last_change");
+
 				$return = array("status" => "success", "text" => "All records have been updated.");
 				echo $json->encode($return);
 			}catch (Exception $ex)
@@ -176,6 +179,7 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$manager->removeRecord($_GET['recordId'], $_GET['domainId']);
+				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been deleted.");
 				echo $json->encode($return);
@@ -190,6 +194,7 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$manager->addRecord ($_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], $_POST['changeDate']);
+				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been added.");
 				echo $json->encode($return);

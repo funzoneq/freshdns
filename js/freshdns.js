@@ -2,7 +2,7 @@ var timeoutInMilisec = 100;
 
 function resultError (request)
 {
-	alert('Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
+    message('error', 'Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
 }
 
 function resultDebug (request)
@@ -16,6 +16,12 @@ function dummy ()
 	return true;
 }
 
+function message(style,text) {
+    var msg = document.getElementById("message");
+    msg.innerHTML = "<div class='alert alert-"+style+"'>" + text + "</div>";
+    msg.onclick = function() { msg.innerHTML = ""; }
+}
+
 function succesFailed (request)
 {
 	if (request.readyState==4)
@@ -27,10 +33,10 @@ function succesFailed (request)
 
 		if(jsonData.status=="success")
 		{
-			alert(jsonData.text);
+		    message("success", jsonData.text);
 		}else
 		{
-			alert("Failed: "+jsonData.text);
+		    message("danger", "Failed: "+jsonData.text);
 		}
 		
 		if(jsonData.reload=="yes")
@@ -42,7 +48,7 @@ function succesFailed (request)
 
 function displayList (id, name, records, fullname, userId)
 {
-	output  = '<tr><td>[ <a href="javascript:deleteZone(\''+id+'\')">delete zone</a> ]</td>';
+	output  = '<tr><td> <a href="javascript:deleteZone(\''+id+'\')"><span class="glyphicon glyphicon-trash"></span></a> </td>';
 	output += '<td><a href="javascript:editDomain('+id+');">'+name+'</a></td>';
 	output += '<td>'+records+'</td>';
 	output += '<td><a href="javascript:ownersList(\''+userId+'\');">'+fullname+'</a></td></tr>';
@@ -67,7 +73,7 @@ function showList (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-		var output = '<table width="800">';
+		var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -102,7 +108,7 @@ function liveSearchResults (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-		var output = '<table width="800">';
+	        var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -137,7 +143,7 @@ function showOwnersList (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-		var output = '<table width="800">';
+	        var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -186,7 +192,7 @@ function editDomainWindow (request)
 	{
 		if(request.responseText=='failed')
 		{
-			alert("The action you performed failed.");
+		    message("danger", "The action you performed failed.");
 		}else
 		{
 			var jsonData = eval('('+request.responseText+')');
