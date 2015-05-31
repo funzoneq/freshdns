@@ -6,17 +6,16 @@ body {
 }
 
 #header {
-	height: 75px;
-	background: #cad3ed;
-	padding: 5px;
-	margin: 0px;
+	
+	_background: #cad3ed;
+	
 }
 
 #logo {
-	display: inline;
-	margin: 5px;
-	width: 75px;
-	height: 75px;
+        margin: -5px 10px 0 0;
+	float: left;
+	width: 35px;
+	height: 35px;
 }
 
 #headingtext {
@@ -30,11 +29,8 @@ body {
 	font-weight: bold;
 }
 
-#navbar {
-	background: #cad3ed;
-	padding: 8px;
-	margin: 20px 0px 20px 0px;
-	height: 20px;
+.navbar {
+    margin-bottom: 5px;
 }
 
 #letters {
@@ -56,13 +52,13 @@ body {
 }
 
 #search {
-	float:right;
-	width: 180px;
+	_float:right;
+	_width: 180px;
 }
 
 #body {
 	color: #353535;
-	padding: 10px;
+	_padding: 10px;
 }
 
 #login {
@@ -244,11 +240,11 @@ ul {
 }
 
 #livesearch {
-margin: 0px 25px 15px 25px;
-padding:0px;
-width: 140px;
-display: block;
-border:1px solid #99b58d;
+_margin: 0px 25px 15px 25px;
+_padding:0px;
+_width: 140px;
+_display: block;
+_border:1px solid #99b58d;
 }
 
 
