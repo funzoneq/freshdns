@@ -291,11 +291,6 @@ class manager
 
 	function searchDomains ($q)
 	{
-		if(strlen($q)<2) // SEARCHES SMALLER THAN 2 ARE USELESS AND TAKE UP CPU :@
-		{
-			return '';
-		}
-
 		$return = array();
 		$query	= "SELECT d.id, d.name, count(r.id) AS records, fullname, u.id AS userId
 		FROM domains d, records r, zones z, users u
@@ -386,6 +381,8 @@ class manager
 
 				return $return;
 			}
+		} else {
+			return $this->searchDomains('');
 		}
 	}
 
