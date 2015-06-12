@@ -1,5 +1,8 @@
 var timeoutInMilisec = 100;
 
+function resetActive() {
+    $("li.active").removeClass("active");
+}
 function resultError (request)
 {
     message('error', 'Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
@@ -58,6 +61,8 @@ function displayList (id, name, records, fullname, userId)
 
 function list (letter)
 {
+        resetActive();
+        $("li[data-navigate-list='"+letter+"']").addClass("active");
 	new Ajax.Request(baseurl+"?p=letterlist&letter="+letter, 
 	{
 		method:"get",
@@ -648,6 +653,7 @@ function loginForm ()
 	result += '  </tr>';
 	result += '</table></form></p>';
 	document.getElementById('login').innerHTML = result;
+	document.getElementById('usernamefield').focus();
 }
 
 function login (username, password)

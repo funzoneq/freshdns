@@ -35,23 +35,6 @@ body {
     margin-bottom: 5px;
 }
 
-#letters {
-	width: 820px;
-	color: #4169e1;
-	font-size: 17px;
-	font-weight: bold;
-	float:left;
-}
-
-#letters a {
-	text-decoration: underline;
-	color: #4169e1;
-}
-
-#letters a:hover {
-	text-decoration: none;
-	color: #4169e1;
-}
 
 #search {
 	_float:right;

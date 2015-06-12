@@ -43,7 +43,7 @@
 	<li><a href="javascript:bulkNewDomain();">Bulk Create</a></li>
 	<?php if($_SESSION['level'] < 10) { ?>
 	<?php }else{ ?>
-	<li><a href="javascript:list('');">All domains</a> </li>
+	<li data-navigate-list=""><a href="javascript:list('');">All domains</a> </li>
 	<li><a href="javascript:userAdmin();">Users</a> </li>
 	<?php } ?>
 
@@ -71,10 +71,10 @@
 
 <div class="container">
 <div class="row"><div class="col-sm-12">
-	<ul class="pagination">
+	<ul class="pagination" id="letters">
 	<?php if($login->isLoggedIn()){ ?>
-	<li><a href="javascript:list('[0-9]');">0-9</a></li>
-	<?php for($i=0x41;$i<=0x40+26; $i++) { ?> <li><a href="javascript:list('<?=chr($i)?>');"><?= chr($i)?></a></li><?php } ?>
+	<li><a href="#" data-navigate-list="[0-9]">0-9</a></li>
+	<?php for($i=0x41;$i<=0x40+26; $i++) { ?> <li><a data-navigate-list="<?=chr($i)?>"><?= chr($i)?></a></li><?php } ?>
 	<?php } ?>
 	</ul>
 
