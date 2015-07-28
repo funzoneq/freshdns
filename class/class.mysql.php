@@ -118,7 +118,7 @@ class mysql extends database {
 	
 	function fetch_array($query)
 	{
-		return mysql_fetch_array($query);
+		return mysql_fetch_assoc($query);
 	}
 	
 	function num_rows ($query)
