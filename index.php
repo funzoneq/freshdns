@@ -57,10 +57,6 @@ if(!$login->isLoggedIn())
 				echo $json->encode($return);
 			}
 			break;
-
-		case "phpinfo":
-			phpinfo();
-			break;
 	}
 }else
 {
@@ -359,10 +355,6 @@ if(!$login->isLoggedIn())
 				$return = array("status" => "failed", "text" => $ex->getMessage());
 				echo $json->encode($return);
 			}
-			break;
-
-		case "phpinfo":
-			phpinfo();
 			break;
 
 		case "logout":
