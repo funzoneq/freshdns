@@ -495,7 +495,7 @@ class manager
 
 	function getAllRecords ($domainId)
 	{
-		$query = "SELECT * FROM zones z, records r
+		$query = "SELECT *, CONCAT(r.prio,'.',r.name,'.',find_in_set( r.type, 'SOA,NS,MX,TXT,A,AAAA,CNAME')) AS `_sort_key` FROM zones z, records r
 		WHERE r.domain_id = z.domain_id AND";
 
 		if($_SESSION['level']<5)
@@ -504,7 +504,7 @@ class manager
 		}
 
 		$query .= " r.domain_id = '".$this->database->escape_string($domainId)."'
-		ORDER BY r.type DESC, r.prio ASC, r.name ASC";
+		";
 
 		$query = $this->database->query_slave($query) or die ($this->database->error());
 
@@ -515,10 +515,11 @@ class manager
 		{
 			while($record=$this->database->fetch_array($query))
 			{
-				$return[] = $record;
+				$sortkey = implode('.', array_reverse(explode('.', $record['_sort_key'])));
+				$return[$sortkey] = $record;
 			}
-
-			return $return;
+			ksort($return);
+			return array_values($return);
 		}
 	}
 
