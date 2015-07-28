@@ -50,11 +50,11 @@ if(!$login->isLoggedIn())
 				$login->login($_POST['username'], $_POST['password']);
 
 				$return = array("status" => "success", "text" => "Welcome, you have been logged in.", "reload" => "yes");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch(Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 	}
@@ -80,24 +80,24 @@ if(!$login->isLoggedIn())
 
 		case "livesearch":
 			$records = $manager->searchDomains($_GET['q']);
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "letterlist":
 			$records = $manager->getListByLetter(strtolower($_GET['letter']));
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "ownerslist":
 			$records = $manager->getListByOwner($_GET['userId']);
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "deleteZone":
 			if(!$_GET['domainId'])
 			{
 				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}else
 			{
 				try
@@ -107,11 +107,11 @@ if(!$login->isLoggedIn())
 					$manager->removeDomain($_GET['domainId']);
 
 					$return = array("status" => "success", "text" => "The zone has been deleted.");
-					echo $json->encode($return);
+					$json->print_json($return);
 				}catch(Exception $ex)
 				{
 					$return = array("status" => "failed", "text" => $ex->getMessage());
-					echo $json->encode($return);
+					$json->print_json($return);
 				}
 			}
 			break;
@@ -120,7 +120,7 @@ if(!$login->isLoggedIn())
 			if(!$_GET['domainId'])
 			{
 				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				echo $json->encode($return);
+				$json->print_json($return);
 				exit;
 			}
 
@@ -129,7 +129,7 @@ if(!$login->isLoggedIn())
 
 			$return = array('domain' => $domain, 'records' => $records);
 
-			echo $json->encode($return);
+			$json->print_json($return);
 
 			unset($domain, $records);
 			break;
@@ -142,11 +142,11 @@ if(!$login->isLoggedIn())
 				touch("/opt/powerdns_copy/last_change");
 				
 				$return = array("status" => "success", "text" => "The record has been updated.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -163,11 +163,11 @@ if(!$login->isLoggedIn())
 				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "All records have been updated.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -178,11 +178,11 @@ if(!$login->isLoggedIn())
 				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been deleted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -193,11 +193,11 @@ if(!$login->isLoggedIn())
 				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -207,11 +207,11 @@ if(!$login->isLoggedIn())
 				$manager->transferDomain($_POST['domainId'], $_POST['owner']);
 
 				$return = array("status" => "success", "text" => "The domain has been transfered.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -219,11 +219,11 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$return = $manager->getAllOwners();
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -235,7 +235,7 @@ if(!$login->isLoggedIn())
 				$return[] = $name;
 			}
 
-			echo $json->encode($return);
+			$json->print_json($return);
 			break;
 
 		case "newDomain":
@@ -263,11 +263,11 @@ if(!$login->isLoggedIn())
 				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial());
 
 				$return = array("status" => "success", "text" => "The domain has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -307,7 +307,7 @@ if(!$login->isLoggedIn())
 			}
 
 			$return = array("status" => "success", "text" => implode("\n", $succes)."\n".implode("\n", $failed));
-			echo $json->encode($return);
+			$json->print_json($return);
 			break;
 
 		case "deleteUser":
@@ -317,16 +317,16 @@ if(!$login->isLoggedIn())
 				$manager->removeUser($_POST['userId']);
 
 				$return = array("status" => "success", "text" => "All user data has been deleted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
 		case "getUser":
-			echo $json->encode($manager->getUser($_POST['userId']));
+			$json->print_json($manager->getUser($_POST['userId']));
 			break;
 
 		case "editUser":
@@ -335,11 +335,11 @@ if(!$login->isLoggedIn())
 				$manager->updateUser($_POST['userId'], $_POST['userId'], $_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains']);
 
 				$return = array("status" => "success", "text" => "The user has been editted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
@@ -349,11 +349,11 @@ if(!$login->isLoggedIn())
 				$manager->addUser($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains']);
 
 				$return = array("status" => "success", "text" => "The user has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
 				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->print_json($return);
 			}
 			break;
 
