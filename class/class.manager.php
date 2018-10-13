@@ -583,12 +583,16 @@ class manager
 			$soa[2]++;
 		}
 
-		return $this->setSoaSerial ($domainId, $soa[0], $soa[1], $soa[2]);
+		return $this->setSoaSerial ($domainId, $soa[0], $soa[1], $soa[2], $soa[3], $soa[4], $soa[5], $soa[6]);
 	}
 
-	function setSoaSerial ($domainId, $ns0, $hostmaster, $serial)
+	function setSoaSerial ($domainId, $ns0, $hostmaster, $serial, $refresh, $retry, $expire, $ttl)
 	{
-		$query		= "UPDATE records SET content='".$this->database->escape_string($ns0." ".$hostmaster." ".$serial)."' WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
+		if(!$refresh) $refresh = 3600;
+		if(!$retry) $retry = 1800;
+		if(!$expire) $expire = 3600000;
+		if(!$ttl) $ttl = 172800;
+		$query		= "UPDATE records SET content='".$this->database->escape_string("$ns0 $hostmaster $serial $refresh $retry $expire $ttl")."' WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
 
 		if($this->database->query_master($query))
 		{
