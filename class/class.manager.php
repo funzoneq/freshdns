@@ -40,6 +40,7 @@ class manager
 
 	function getUser ($userId)
 	{
+		global $u2f;
 		$query = "SELECT * FROM users WHERE id = '".$this->database->escape_string($userId)."'";
 		$query = $this->database->query_slave($query) or die ($this->database->error());
 
@@ -48,16 +49,34 @@ class manager
 			return '';
 		}else
 		{
-			return $this->database->fetch_array($query);
+			
+			$userdata = $this->database->fetch_array($query);
+			$u2fdata = array();
+			if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
+
+			list($req,$sigs) = $u2f->getRegisterData($u2fdata);
+			$_SESSION['regReq'] = json_encode($req);
+			$userdata['u2f_req'] = $req;
+			$userdata['u2f_sigs'] = $sigs;
+			
+			return $userdata;
 		}
 	}
 
-	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains)
+	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains, $u2fdata)
 	{
+		global $u2f;
+		$u2fdata = json_decode($u2fdata);
+		foreach($u2fdata as &$d) {
+			if (!$d->keyHandle) {
+				$d = $u2f->doRegister(json_decode($_SESSION['regReq']), $d);
+			}
+		}
+		$u2fdata = json_encode($u2fdata);
 		$query = "UPDATE `users`
 		SET `username`='".$this->database->escape_string($username)."',
 		`fullname`='".$this->database->escape_string($fullname)."', `email`='".$this->database->escape_string($email)."',
-		`description`='".$this->database->escape_string($description)."',";
+		`description`='".$this->database->escape_string($description)."', `u2fdata`='".$this->database->escape_string($u2fdata)."',";
 
 		if($_SESSION['level']>5)
 		{

@@ -4,10 +4,14 @@ header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 include_once('./config.inc.php');
+include_once('./class/class.U2F.php');
 
 $login = new login($config['database']);
 $json = new Services_JSON();
 $manager = new manager($config['database']);
+
+$scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
+$u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 
 try {
 	$login->isLoggedIn();
@@ -39,6 +43,7 @@ if(!$login->isLoggedIn())
 			<div class="leeg">&nbsp;</div>
 			<div id="login"></div></div>';
 
+			echo "<script src='./js/u2f-api.js'></script>";
 			echo '<script type="text/javascript" language="JavaScript1.2">loginForm();</script>';
 
 			include('./templates/footer.tpl.php');
@@ -47,8 +52,18 @@ if(!$login->isLoggedIn())
 		case "doLogin":
 			try
 			{
-				$login->login($_POST['username'], $_POST['password']);
+				$return = $login->login($_POST['username'], $_POST['password']);
+				$json->print_json($return);
+			}catch(Exception $ex)
+			{
+				$return = array("status" => "failed", "text" => $ex->getMessage());
+				$json->print_json($return);
+			}
+			break;
 
+		case "checkU2f":
+			try {
+				$login->checkU2fSignature($_POST['username'], $_POST['auth']);
 				$return = array("status" => "success", "text" => "Welcome, you have been logged in.", "reload" => "yes");
 				$json->print_json($return);
 			}catch(Exception $ex)
@@ -57,6 +72,8 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}
 			break;
+
+
 	}
 }else
 {
@@ -75,6 +92,7 @@ if(!$login->isLoggedIn())
 				echo '<script type="text/javascript" language="JavaScript1.2">liveSearchStart();</script>';
 			}
 
+			echo "<script src='./js/u2f-api.js'></script>";
 			include('./templates/footer.tpl.php');
 			break;
 
@@ -260,7 +278,7 @@ if(!$login->isLoggedIn())
 				}
 
 				// IT'S A NEW DOMAIN, RESET THE SOA TO 00
-				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial());
+				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial(), 3600, 1800, 3600000, 172800);
 
 				$return = array("status" => "success", "text" => "The domain has been added.");
 				$json->print_json($return);
@@ -332,7 +350,7 @@ if(!$login->isLoggedIn())
 		case "editUser":
 			try
 			{
-				$manager->updateUser($_POST['userId'], $_POST['userId'], $_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains']);
+				$manager->updateUser($_POST['userId'], $_POST['userId'], $_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains'], $_POST['u2fdata']);
 
 				$return = array("status" => "success", "text" => "The user has been editted.");
 				$json->print_json($return);

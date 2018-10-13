@@ -1,12 +1,52 @@
 var timeoutInMilisec = 100;
+var lastAddedName = "", lastAddedType = "", lastAddedContent="";
+var currentEditedDomain = null;
+var currentHash = null;
+
+function init() {
+	if (!myUserId) return;
+	$("li[data-navigate-list]").click(onNavigateListClicked);
+	onNavigateHash(location.hash);
+	window.addEventListener('hashchange', function(e) {
+		console.log(location.hash , currentHash);
+		if (location.hash == currentHash) return;
+		onNavigateHash(location.hash);
+	});
+}
+$(document).ready(init);
+
+function onNavigateListClicked(e) {
+	var letter = this.getAttribute("data-navigate-list");
+	list(letter);
+	return false;
+}
+
+function onNavigateHash(hash) {
+	var parts = hash.split(/=/);
+	switch(parts[0]) {
+		case '#domain': editDomain(parseInt(parts[1])); break;
+		case '#list': list(parts[1]); break;
+	}
+}
+function updateHash(hash) {
+	currentHash = hash;
+	location.hash = hash;
+}
+
 
 function resetActive() {
-    $("li.active").removeClass("active");
+		$("li.active").removeClass("active");
 }
-function resultError (request)
-{
-    message('error', 'Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
+function resultError (request) {
+		message('danger', 'Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
 }
+
+Ajax.Responders.register({
+	onException: function(req, ex) {
+		console.warn("Unhandled Exception in AJAX handler",ex);
+		message('danger', 'Unhandled Exception: '+ex);
+	}
+});
 
 function resultDebug (request)
 {
@@ -46,6 +86,10 @@ function succesFailed (request)
 		{
 			window.location.reload();
 		}
+
+		if (jsonData.u2f_challenge) {
+			doU2fSignature(jsonData.u2f_challenge);
+		}
 	}
 }
 
@@ -70,6 +114,7 @@ function list (letter)
 		onSuccess:showList,
 		onFailure:resultError
 	});
+	updateHash('#list=' + letter);
 }
 
 function showList (request)
@@ -585,10 +630,15 @@ function editUser (userId)
 
 function showEditUser (request)
 {
+	console.log("showEditUser",request);
 	if (request.readyState==4)
 	{
-		var jsonData = eval('('+request.responseText+')');
-		
+		var jsonData = JSON.parse(request.responseText);
+		console.log(jsonData);
+		editUser_data = jsonData;
+		try{editUser_u2ftokens=JSON.parse(jsonData.u2fdata);}catch(ex){}
+		if(!editUser_u2ftokens.length) editUser_u2ftokens=[];
+
 		var result = '<table width="800"><input type="hidden" id="userId" value="'+jsonData.id+'">';
 		result += '<tr><td>Username</td><td><input type="text" id="username" value="'+jsonData.username+'"></td></tr>';
 		result += '<tr><td>Password</td><td><input type="password" id="password" value=""></td></tr>';
@@ -598,14 +648,38 @@ function showEditUser (request)
 		result += '<tr><td>Max domains</td><td colspan="2"><input type="text" id="maxdomains" value="'+jsonData.maxdomains+'"></td></tr>';
 		result += '<tr><td>Level</td><td><input type="text" id="level" value="'+jsonData.level+'"></td></tr>';
 		result += '<tr><td>Active</td><td><input type="text" id="active" value="'+jsonData.active+'"></td></tr>';
-		result += '<tr><td><input type="button" name="save" value="Opslaan" onclick="javascript:saveUser(';
-		result += 'document.getElementById(\'userId\').value, document.getElementById(\'username\').value, document.getElementById(\'password\').value,';
-		result += ' document.getElementById(\'fullname\').value, document.getElementById(\'email\').value, document.getElementById(\'description\').value,';
-		result += ' document.getElementById(\'level\').value, document.getElementById(\'active\').value, document.getElementById(\'maxdomains\').value);"></td><td></td></tr>';
 		result += '</table>';
+		result += '<div style="border: 1px solid #ddd; padding: 10px">';
+		result += "<ul>";
+		for(var i=0; i<editUser_u2ftokens.length; i++) {
+			var token = editUser_u2ftokens[i];
+			result += "<li>";
+			for(var key in token) if (token.hasOwnProperty(key)) result += "<b>"+key+"</b>="+token[key]+"<br>";
+			result += "<input type='button' value='remove' onclick='removeU2fKey("+i+");'></li>";
+		}
+		result += "</ul>";
+		result += '<div id="u2f-status"><input type="button" name="save" value="Add U2F key" onclick="addU2fKey();"></div>';
+		result += '</div>';
+
+		result += '<hr><input type="button" name="save" value="Apply" onclick="saveUserFromForm();">';
+		result += '<hr>';
 		
 		document.getElementById("body").innerHTML = result;
 	}
+}
+function addU2fKey() {
+	document.getElementById("u2f-status").innerHTML="Press your U2F key to add it to your account...";
+	var appId = editUser_data.u2f_req.appId;
+	var registerRequests = [{version: editUser_data.u2f_req.version, challenge: editUser_data.u2f_req.challenge}];
+		u2f.register(appId, registerRequests, editUser_data.u2f_sigs, function(signature) {
+		if (!editUser_u2ftokens) editUser_u2ftokens = [];
+		editUser_u2ftokens.push(signature);
+		document.getElementById("u2f-status").innerHTML="U2F key added, click Apply to store";
+	});
+}
+function removeU2fKey(index) {
+	editUser_u2ftokens.splice(index,1);
+	saveUserFromForm();
 }
 
 function addUser (username, password, passwordcheck, fullname, email, description, level, active, maxdomains)
@@ -620,12 +694,17 @@ function addUser (username, password, passwordcheck, fullname, email, descriptio
 	});
 }
 
+function saveUserFromForm() {
+	saveUser(document.getElementById('userId').value, document.getElementById('username').value, document.getElementById('password').value,
+		document.getElementById('fullname').value, document.getElementById('email').value, document.getElementById('description').value,
+		document.getElementById('level').value, document.getElementById('active').value, document.getElementById('maxdomains').value);
+}
 function saveUser (userId, username, password, fullname, email, description, level, active, maxdomains)
 {
 	new Ajax.Request(baseurl+"?p=editUser", 
 	{
 		method:"post",
-		postBody:"userId="+userId+"&username="+username+"&password="+password+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains,
+		postBody:"userId="+userId+"&username="+username+"&password="+password+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains+"&u2fdata="+JSON.stringify(editUser_u2ftokens),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -666,4 +745,17 @@ function login (username, password)
 		onSuccess:succesFailed,
 		onFailure:resultError
 	});
+}
+
+function doU2fSignature(req) {
+	setTimeout(function() {
+		u2f.sign(req.challenge[0].appId, req.challenge[0].challenge, req.challenge, function(data) {
+			document.getElementById("login").innerHTML="Login successful, redirecting ...";
+			new Ajax.Request(baseurl+"?p=checkU2f", {
+				method:"post", postBody: "username="+encodeURIComponent(req.username)+"&auth="+encodeURIComponent(JSON.stringify(data)),
+				asynchronous:true, onSuccess:succesFailed, onFailure:resultError
+			});
+		});
+		document.getElementById("login").innerHTML="<h2>Please touch U2F device...</h2>";
+	}, 1);
 }

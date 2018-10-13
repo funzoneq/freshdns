@@ -8,7 +8,6 @@
 <img src="./images/freshdns.png" width="80" height="15" alt="FreshDNS AJAX based, PowerDNS administration system" /></a></p></div>
 
 <div id="debug"></div>
-<script src="vendor/jquery-2.1.4.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

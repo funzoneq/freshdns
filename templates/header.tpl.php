@@ -3,9 +3,10 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <title>FreshDNS</title>
-	<script type="text/javascript" language="JavaScript1.2">var baseurl = '';</script>
-	<script type="text/javascript" language="JavaScript1.2" src="./js/prototype.js"> </script>
-	<script type="text/javascript" language="JavaScript1.2" src="./js/freshdns.js"> </script>
+	<script>var baseurl = '';</script>
+	<script src="./js/prototype.js"></script>
+	<script src="vendor/jquery-2.1.4.min.js"></script>
+	<script src="./js/freshdns.js"></script>
 	<script type="text/javascript">
 	var liveSearchRoot = baseurl;
 	var liveSearchRootSubDir = "/";
