@@ -9,24 +9,11 @@ define('VERSION',		'1.0.3');
 
 /*****************************************************/
 
-$config['mysql']['use']							= true;
-$config['mysql']['username']					= 'username';
-$config['mysql']['password']					= 'password';	
-$config['mysql']['database']					= 'pdns';
-$config['mysql']['master_host']					= 'localhost';
-$config['mysql']['slave_hosts']					= array('localhost','localhost'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-$config['mysql']['use_replication']				= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-
-
-/*****************************************************/
-
-$config['postgresql']['use']					= false;
-$config['postgresql']['username']				= 'username';
-$config['postgresql']['password']				= 'password';	
-$config['postgresql']['database']				= 'pdns';
-$config['postgresql']['master_host']			= 'localhost';
-$config['postgresql']['slave_hosts']			= array('localhost','localhost'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-$config['postgresql']['use_replication']		= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config['DB']['username']					= 'username';
+$config['DB']['password']					= 'password';	
+$config['DB']['master_dsn']					= 'mysql:dbname=pdns;host=127.0.0.1';
+$config['DB']['slave_dsns']					= array('mysql:dbname=pdns;host=127.0.0.1','mysql:dbname=pdns;host=127.0.0.1'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config['DB']['use_replication']				= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 
 /*****************************************************/
 
@@ -77,28 +64,15 @@ array("name" => "{#DOMAIN#}",           "type" => "MX",         "content" => "AS
 /*****************************************************/
 
 include_once(CLASSES.'class.database.php');
-include_once(CLASSES.'class.mysql.php');
-include_once(CLASSES.'class.postgresql.php');
+include_once(CLASSES.'class.PDO.php');
 include_once(CLASSES.'class.manager.php');
 include_once(CLASSES.'class.login.php');
 include_once(CLASSES.'class.xmlcreator.php');
 include_once(CLASSES.'class.JSON.php');
 
 /*****************************************************/
-		
-if ($config['postgresql']['use']==false && $config['mysql']['use']==true)
-{
-	$config['database'] = new mysql();
-	$config['database']->setVars($config['mysql']['username'], $config['mysql']['password'], $config['mysql']['database'], $config['mysql']['master_host'], $config['mysql']['slave_hosts'], $config['mysql']['use_replication']);
-	$config['database']->initiate();
-}else if ($config['postgresql']['use']==true && $config['mysql']['use']==false)
-{
-	$config['database'] = new postgresql();
-	$config['database']->setVars($config['postgresql']['username'], $config['postgresql']['password'], $config['postgresql']['database'], $config['postgresql']['master_host'], $config['postgresql']['slave_hosts'], $config['postgresql']['use_replication']);
-	$config['database']->initiate();
-}else
-{
-	echo 'You have encountered an error: You did not select the right database in config.inc.php';
-	exit;
-}
+
+$config['database'] = new PDO_DB();
+$config['database']->setVars($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
+$config['database']->initiate();
 ?>

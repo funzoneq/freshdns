@@ -14,10 +14,8 @@ class login
 	{
 		if(isset($_SESSION['loggedIn'], $_SESSION['userId'], $_SESSION['username'], $_SESSION['level']))
 		{
-			$query = "SELECT id FROM users WHERE username='".$this->database->escape_string($_SESSION['username'])."' AND
-			level='".$this->database->escape_string($_SESSION['level'])."' AND id='".$this->database->escape_string($_SESSION['userId'])."'
-			AND active='1'";
-			$query = $this->database->query_slave($query);
+			$query = "SELECT id FROM users WHERE username=? AND level=? AND id=? AND active='1'";
+			$query = $this->database->query_slave($query, [ $_SESSION['username'], $_SESSION['level'], $_SESSION['userId'] ]);
 			if($this->database->num_rows($query)!=1)
             {
             	throw new Exception ("FakeLoginFound");
@@ -35,8 +33,8 @@ class login
 	function login ($username, $password)
 	{
 		global $u2f;
-		$query = "SELECT id, fullname, level, password, u2fdata FROM users WHERE username='".$this->database->escape_string($username)."' AND password='".md5($this->database->escape_string($password))."' AND active='1'";
-		$query = $this->database->query_slave($query);
+		$query = "SELECT id, fullname, level, password, u2fdata FROM users WHERE username=? AND password=? AND active='1'";
+		$query = $this->database->query_slave($query, [ $username, md5($password) ]);
 		
 		if($this->database->num_rows($query)!=1)
 		{
@@ -70,8 +68,8 @@ class login
 		$authReq = json_decode($_SESSION['authReq']);
 		$_SESSION['authReq'] = NULL;
 		if ($username !== $_SESSION['username']) throw new Exception("InvalidRequest");
-		$query = "SELECT u2fdata FROM users WHERE username='".$this->database->escape_string($username)."' AND active='1'";
-		$query = $this->database->query_slave($query);
+		$query = "SELECT u2fdata FROM users WHERE username=? AND active='1'";
+		$query = $this->database->query_slave($query, [ $username ]);
 
 		if($this->database->num_rows($query)!=1) {
 			throw new Exception ("NoUserFound");
@@ -83,7 +81,8 @@ class login
 				foreach($u2fdata as &$i) {
 					if ($i->id == $data->id) $i->counter = $data->counter;
 				}
-				$this->database->query_slave("UPDATE users SET u2fdata = '".$this->database->escape_string(json_encode($u2fdata))."' WHERE username='".$this->database->escape_string($username)."';");
+				$this->database->updateModel('users', [ 'username' => $username ],
+											[ 'u2fdata' => json_encode($u2fdata) ]);
 
 				$_SESSION['loggedIn'] = true;
 				return TRUE;
