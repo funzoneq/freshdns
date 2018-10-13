@@ -32,7 +32,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href=""><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
+      <a class="navbar-brand" href="<?= dirname($_SERVER["PHP_SELF"]) ?>"><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
     </div>
 
 
@@ -44,7 +44,7 @@
 	<li><a href="javascript:bulkNewDomain();">Bulk Create</a></li>
 	<?php if($_SESSION['level'] < 10) { ?>
 	<?php }else{ ?>
-	<li data-navigate-list=""><a href="javascript:list('');">All domains</a> </li>
+	<li data-navigate-list=""><a href="#">All domains</a> </li>
 	<li><a href="javascript:userAdmin();">Users</a> </li>
 	<?php } ?>
 
@@ -74,8 +74,8 @@
 <div class="row"><div class="col-sm-12">
 	<ul class="pagination" id="letters">
 	<?php if($login->isLoggedIn()){ ?>
-	<li><a href="#" data-navigate-list="[0-9]">0-9</a></li>
-	<?php for($i=0x41;$i<=0x40+26; $i++) { ?> <li><a data-navigate-list="<?=chr($i)?>"><?= chr($i)?></a></li><?php } ?>
+	<li data-navigate-list="[0-9]"><a href="#">0-9</a></li>
+	<?php for($i=0x41;$i<=0x40+26; $i++) { ?> <li data-navigate-list="<?=chr($i)?>"><a href="#"><?= chr($i)?></a></li><?php } ?>
 	<?php } ?>
 	</ul>
 
