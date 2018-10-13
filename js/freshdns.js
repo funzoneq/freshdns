@@ -123,7 +123,7 @@ function showList (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-		var output = '<table class="table table-condensed table-striped">';
+		var output = '<h3>List</h3><table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -256,13 +256,14 @@ function editDomainWindow (request)
         		});
 
 
+			var name = jsonData.domain.name;
 			var result  = '<p><table>';
 			result += '  <tr>';
-			result += '	<td><h1>Edit domain :: '+jsonData.domain.name+' ('+jsonData.records.length+')</h1></td>';
+			result += '	<td><h3>Edit domain :: <b>'+name+'</b> ('+jsonData.records.length+')</h3></td>';
 			result += '  </tr>';
 			result += '  <tr>';
 			result += '	<td><form name="editDomain" action="javascript:saveAllRecords(document.editDomain);">';
-			result += '	<input type="hidden" id="domainId" value="'+jsonData.domain.id+'" /><table>';
+			result += '	<input type="hidden" id="domainId" value="'+jsonData.domain.id+'" /><table id="recordsTable">';
 			result += '	<tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>';
 			
 			for(i=0; i<jsonData.records.length; i++)
@@ -285,7 +286,7 @@ function editDomainWindow (request)
 			result += '	<tr><td colspan="7"><input type="submit" value="save all changes"></td></tr></table></form></td>';
 			result += '  </tr>';
 			result += '  <tr>';
-			result += '	<td><h1>Add a record</h1></td>';
+			result += '	<td><h3>Add a record</h3></td>';
 			result += '  </tr>';
 			result += '  <tr>';
 			result += '	   <td><table>';
@@ -306,20 +307,21 @@ function editDomainWindow (request)
 			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="new[save]" value="save" />';
 			result += '	</tr></table></td>';
 			result += '  </tr>';
-
+			
 			if(userlevel >= 5)
 			{
 				result += '  <tr>';
-                result += '     <td><h1>Transfer domain</h1></td>';
-                result += '  </tr>';
-                result += '  <tr>';
-                result += '    <td>Transfer domain to <select id="owner"></select>';
+				result += '     <td><h3>Transfer domain</h3></td>';
+				result += '  </tr>';
+				result += '  <tr>';
+				result += '    <td>Transfer domain to <select id="owner"></select>';
 				result += ' <input type="button" onclick="transferDomain('+jsonData.domain.id+', document.getElementById(\'owner\').value);" value="transfer" /></td>';
-                result += '  </tr>';
+				result += '  </tr>';
 				result += '</table></p>';
 			}
 			
 			document.getElementById('body').innerHTML = result;
+			if (lastAddedType) document.getElementById("new[type]").value = lastAddedType;
 		}
 	}
 }
@@ -423,7 +425,7 @@ function newDomain ()
 	
 	var result  = '<table>';
 	result += '<tr>';
-	result += '	 <td colspan="2"><h1>Add a domain</h1></td>';
+	result += '	 <td colspan="2"><h3>Add a domain</h3></td>';
 	result += '</tr>';
 	result += '<tr><td>Domain name:</td><td><input type="text" id="domain" /></td></tr>';
 	result += '<tr><td>WEB IP:</td><td><input type="text" id="webIP" /></td></tr>';
@@ -458,7 +460,7 @@ function bulkNewDomain ()
 	
 	var result  = '<table>';
 	result += '<tr>';
-	result += '	 <td colspan="2"><h1>Add multiple domains</h1></td>';
+	result += '	 <td colspan="2"><h3>Add multiple domains</h3></td>';
 	result += '</tr>';
 	result += '<tr><td>Domain names:<br />(one domain per line)</td><td><textarea id="domains" rows="10" cols="50"></textarea></td></tr>';
 	result += '<tr><td>WEB IP:</td><td><input type="text" id="webIP" /></td></tr>';
@@ -555,6 +557,7 @@ function showUserAdmin (request)
 		var jsonData = eval('('+request.responseText+')');
 		
 		var result = '<form name="addUserrrr"><table width="800">';
+		result += '<tr><td colspan=3><h3>User list</h3></td></tr>';
 		
 		for(i=0; i<jsonData.length; i++)
 		{
@@ -569,7 +572,7 @@ function showUserAdmin (request)
 		}
 		
 		result += '<tr><td colspan="3">&nbsp;</td></tr>';
-		result += '<tr><td colspan="3"><h1>Add a user</h1></td></tr>';
+		result += '<tr><td colspan="3"><h3>Add a user</h3></td></tr>';
 		result += '<tr><td>Username</td><td colspan="2"><input type="text" id="username"></td></tr>';
 		result += '<tr><td>Password</td><td colspan="2"><input type="text" id="password"></td></tr>';
 		result += '<tr><td>Password check</td><td colspan="2"><input type="text" id="passwordcheck"></td></tr>';

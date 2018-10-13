@@ -296,3 +296,20 @@ ul#LSShadow {
 td {
 	vertical-align: top;
 }
+
+#recordsTable tr td input[type=text] {
+    background: #eee; border: 1px solid #ccc;
+}
+#recordsTable input.type {
+    font-family: monospace;
+}
+#recordsTable input.num {
+    font-family: monospace; text-align: right;
+}
+#recordsTable tr:hover td input[type=text] {
+    background: #fff;
+}
+h3 {
+    background: #ddd; font-size: 12pt; padding: 10px;
+}
+.pagination { margin-bottom: 0; }
