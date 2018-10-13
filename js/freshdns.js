@@ -227,6 +227,7 @@ function deleteZone (domainId)
 
 function editDomain (domainId)
 {
+	updateHash('#domain=' + domainId);
 	new Ajax.Request(baseurl+"?p=getDomainInfo&domainId="+encodeURIComponent(domainId), 
 	{
 		method:"get",
@@ -245,7 +246,7 @@ function editDomainWindow (request)
 				message("danger", "The action you performed failed.");
 		}else
 		{
-			var jsonData = eval('('+request.responseText+')');
+			var jsonData = currentEditedDomain = JSON.parse(request.responseText);
 			
 			new Ajax.Request(baseurl+"?p=getOwners",
 				{
@@ -269,16 +270,16 @@ function editDomainWindow (request)
 			{
 				var r = jsonData.records[i];
 				result += '<tr>';
-				result += '<td><input type="text" value="'+r.name+'" id="name['+i+']"><input type="hidden" value="'+r.id+'" id="id['+i+']"></td>';
-				result += '<td><input type="text" size="4" value="'+r.type+'" id="type['+i+']"></td>';
-				result += '<td><input type="text" size="50" value="'+r.content+'" id="content['+i+']"></td>';
-				result += '<td><input type="text" size="2" value="'+r.prio+'" id="prio['+i+']"></td>';
-				result += '<td><input type="text" size="4" value="'+r.ttl+'" id="ttl['+i+']"></td>';
-				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" value="delete record" id="delete['+i+']"></td>';
+				result += '<td><input type="text" value="'+r.name.replace(name, '')+'" id="name['+i+']"><input type="hidden" value="'+r.id+'" id="id['+i+']"></td>';
+				result += '<td><input type="text" size="6" class="type" value="'+r.type+'" id="type['+i+']"></td>';
+				result += '<td><input type="text" size="50" value="'+r.content.replace(/"/g, '&quot;')+'" id="content['+i+']"></td>';
+				result += '<td><input type="text" size="2" class="num" value="'+r.prio+'" id="prio['+i+']"></td>';
+				result += '<td><input type="text" size="4" class="num" value="'+r.ttl+'" id="ttl['+i+']"></td>';
+				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" value="delete" id="delete['+i+']"></td>';
 				result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
 				result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
 				result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
-				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="save['+i+']" value="save"></td>';
+				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="save['+i+']" value="save record"></td>';
 				result += '</tr>';
 			}
 			
@@ -290,7 +291,7 @@ function editDomainWindow (request)
 			result += '  <tr>';
 			result += '	   <td><table>';
 			result += '	   <tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td></tr>';
-			result += '    <tr><td><input type="text" value="'+r.name+'" id="new[name]" /></td>';
+			result += '    <tr><td><input type="text" value="'+(lastAddedName?lastAddedName:r.name.replace(name,''))+'" id="new[name]" /></td>';
 			result += '    <td><select id="new[type]"><option selected="selected" value="A">A</option>';
 			result += '    <option value="AAAA">AAAA</option><option value="CNAME">CNAME</option>';
 			result += '    <option value="HINFO">HINFO</option><option value="MX">MX</option>';
@@ -298,7 +299,7 @@ function editDomainWindow (request)
 			result += '    <option value="PTR">PTR</option><option value="SOA">SOA</option>';
 			result += '    <option value="TXT">TXT</option><option value="URL">URL</option>';
 			result += '    <option value="SRV">SRV</option><option value="MBOXFW">MBOXFW</option></select></td>';
-			result += '	   <td><input type="content" size="50" value="" id="new[content]" /></td>';
+			result += '	   <td><input type="content" size="50" value="'+lastAddedContent+'" id="new[content]" /></td>';
 			result += '	   <td><input type="prio" size="2" value="0" id="new[prio]" /"></td>';
 			result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';
 			result += '	   <td><input type="button" onclick="newRecord('+jsonData.domain.id+', document.getElementById(\'new[name]\').value, ';
@@ -386,7 +387,7 @@ function saveRecord(domainId, recordId, name, type, content, prio, ttl)
 	new Ajax.Request(baseurl+"?p=saveRecord", 
 	{
 		method:"post",
-		postBody:"domainId="+encodeURIComponent(domainId)+"&recordId="+encodeURIComponent(recordId)+"&name="+encodeURIComponent(name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
+		postBody:"domainId="+encodeURIComponent(domainId)+"&recordId="+encodeURIComponent(recordId)+"&name="+encodeURIComponent(name + currentEditedDomain.domain.name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -395,10 +396,11 @@ function saveRecord(domainId, recordId, name, type, content, prio, ttl)
 
 function newRecord (domainId, name, type, content, prio, ttl)
 {
+	lastAddedName = name; lastAddedType = type; lastAddedContent = content;
 	new Ajax.Request(baseurl+"?p=newRecord", 
 	{
 		method:"post",
-		postBody:"domainId="+encodeURIComponent(domainId)+"&name="+encodeURIComponent(name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
+		postBody:"domainId="+encodeURIComponent(domainId)+"&name="+encodeURIComponent(name + currentEditedDomain.domain.name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError
@@ -621,6 +623,7 @@ function deleteUser (userId)
 
 function editUser (userId)
 {
+	console.log("editUser",userId);
 	new Ajax.Request(baseurl+"?p=getUser", 
 	{
 		method:"post",
