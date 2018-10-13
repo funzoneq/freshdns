@@ -60,9 +60,9 @@ function dummy ()
 }
 
 function message(style,text) {
-    var msg = document.getElementById("message");
-    msg.innerHTML = "<div class='alert alert-"+style+"'>" + text + "</div>";
-    msg.onclick = function() { msg.innerHTML = ""; }
+	var msg = document.getElementById("message");
+	msg.innerHTML = "<div class='alert alert-"+style+"'>" + text + "</div>";
+	msg.onclick = function() { msg.innerHTML = ""; }
 }
 
 function succesFailed (request)
@@ -76,10 +76,10 @@ function succesFailed (request)
 
 		if(jsonData.status=="success")
 		{
-		    message("success", jsonData.text);
+			message("success", jsonData.text);
 		}else
 		{
-		    message("danger", "Failed: "+jsonData.text);
+			message("danger", "Failed: "+jsonData.text);
 		}
 		
 		if(jsonData.reload=="yes")
@@ -105,8 +105,8 @@ function displayList (id, name, records, fullname, userId)
 
 function list (letter)
 {
-        resetActive();
-        $("li[data-navigate-list='"+letter+"']").addClass("active");
+	resetActive();
+	$("li[data-navigate-list='"+letter+"']").addClass("active");
 	new Ajax.Request(baseurl+"?p=letterlist&letter="+letter, 
 	{
 		method:"get",
@@ -158,7 +158,7 @@ function liveSearchResults (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-	        var output = '<table class="table table-condensed table-striped">';
+		var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -193,7 +193,7 @@ function showOwnersList (request)
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
-	        var output = '<table class="table table-condensed table-striped">';
+		var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
 		{
@@ -242,19 +242,18 @@ function editDomainWindow (request)
 	{
 		if(request.responseText=='failed')
 		{
-		    message("danger", "The action you performed failed.");
+				message("danger", "The action you performed failed.");
 		}else
 		{
 			var jsonData = eval('('+request.responseText+')');
 			
 			new Ajax.Request(baseurl+"?p=getOwners",
-        		{
-                		method:"get",
-                		asynchronous:true,
-                		onSuccess:changeOwnersSelect,
-                		onFailure:resultError
-        		});
-
+				{
+					method:"get",
+					asynchronous:true,
+					onSuccess:changeOwnersSelect,
+					onFailure:resultError
+				});
 
 			var name = jsonData.domain.name;
 			var result  = '<p><table>';
@@ -339,18 +338,19 @@ function saveAllRecords (input)
 		{
 			var domainId = value;
 		}
+		if (ident.match(/name\[/)) value += currentEditedDomain.domain.name;
 		
 		postBody += '&'+encodeURIComponent(ident)+'='+encodeURIComponent(value);
 	}
 	
 	new Ajax.Request(baseurl+"?p=saveAllRecords",
-    {
-    	method:"post",
-		postBody:postBody,
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
-	});
+		{
+			method:"post",
+			postBody:postBody,
+			asynchronous:true,
+			onSuccess:succesFailed,
+			onFailure:resultError
+		});
 	
 	setTimeout('editDomain('+domainId+');', timeoutInMilisec);
 }
@@ -359,11 +359,11 @@ function transferDomain (domainId, owner)
 {
 	new Ajax.Request(baseurl+"?p=transferDomain",
         {
-                method:"post",
-                postBody:"domainId="+encodeURIComponent(domainId)+"&owner="+encodeURIComponent(owner),
-                asynchronous:true,
-                onSuccess:succesFailed,
-                onFailure:resultError
+            method:"post",
+            postBody:"domainId="+encodeURIComponent(domainId)+"&owner="+encodeURIComponent(owner),
+            asynchronous:true,
+            onSuccess:succesFailed,
+            onFailure:resultError
         });
 }
 
