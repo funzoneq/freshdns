@@ -514,7 +514,7 @@ class manager
 
 	function getAllRecords ($domainId)
 	{
-		$query = "SELECT *, CONCAT(r.prio,'.',r.name,'.',find_in_set( r.type, 'SOA,NS,MX,TXT,A,AAAA,CNAME')) AS `_sort_key` FROM zones z, records r
+		$query = "SELECT *, CONCAT(r.id,'.',r.prio,'.',r.name,'.',9-find_in_set(r.type, 'MX,NS,SOA')) AS `_sort_key` FROM zones z, records r
 		WHERE r.domain_id = z.domain_id AND";
 
 		if($_SESSION['level']<5)
