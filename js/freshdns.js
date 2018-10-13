@@ -643,7 +643,7 @@ function showEditUser (request)
 		console.log(jsonData);
 		editUser_data = jsonData;
 		try{editUser_u2ftokens=JSON.parse(jsonData.u2fdata);}catch(ex){}
-		if(!editUser_u2ftokens.length) editUser_u2ftokens=[];
+		if(!editUser_u2ftokens || !editUser_u2ftokens.length) editUser_u2ftokens=[];
 
 		var result = '<table width="800"><input type="hidden" id="userId" value="'+jsonData.id+'">';
 		result += '<tr><td>Username</td><td><input type="text" id="username" value="'+jsonData.username+'"></td></tr>';
