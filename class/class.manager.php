@@ -24,10 +24,16 @@ class manager
 			return false;
 		}
 
-		$query = "INSERT INTO `users` ( `id` , `username` , `password` , `fullname` , `email` , `description` , `level` , `active` , `maxdomains`) VALUES
-		('', ?, ?, ?, ?, ?, ?, ?, ?);";
-
-		if($this->database->query_master($query, [ $username, $password, $fullname, $email, $description, $level, $active, $maxdomains ]))
+		if($this->database->createModel('users', [
+			'username' => $username,
+			'password' => $password,
+			'fullname' => $fullname, 
+			'email' => $email, 
+			'description' => $description, 
+			'level' => $level, 
+			'active' => $active, 
+			'maxdomains' => $maxdomains
+		]))
 		{
 			return mysql_insert_id();
 		}else
