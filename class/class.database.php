@@ -1,6 +1,6 @@
 <?php
 abstract class database
-{	
+{
 	abstract function initiate ();
 	
 	abstract function query_slave($query);
@@ -37,4 +37,3 @@ abstract class database
 	
 	abstract function setVars ($username, $password, $database, $master, $slave = array(), $replication='');
 }
-?>

@@ -121,4 +121,3 @@ class login
 		session_destroy();
 	}
 }
-?>

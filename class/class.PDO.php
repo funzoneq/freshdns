@@ -223,4 +223,3 @@ class PDO_DB {
 		$this->master->rollBack();
 	}
 }
-?>

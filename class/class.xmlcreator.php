@@ -45,4 +45,3 @@ class xmlcreator {
 		return $this->content;
 	}
 }
-?>

@@ -376,4 +376,3 @@ if(!$login->isLoggedIn())
 }
 
 unset($json, $manager);
-?>
