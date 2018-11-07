@@ -9,7 +9,15 @@ abstract class database
 	
 	abstract function error ();
 	
+	/**
+	 * fetch one database row at a time, as an associative array
+	 */
 	abstract function fetch_array($query);
+
+	/**
+	 * fetch all result rows at once, as an indexed array of associative arrays
+	 */
+	abstract function fetch_all($query);
 	
 	abstract function num_rows ($query);
 	

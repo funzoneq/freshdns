@@ -100,7 +100,10 @@ class PDO_DB {
 	{
 		return $query->fetch(PDO::FETCH_ASSOC);
 	}
-	
+	function fetch_all($query)
+	{
+		return $query->fetchAll(PDO::FETCH_ASSOC);
+	}
 	function num_rows ($query)
 	{
 		return $query->rowCount();

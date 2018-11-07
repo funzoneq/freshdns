@@ -316,18 +316,7 @@ class manager
 		$queryArgs []= "%$q%";
 		$query	= $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
-		}
+		return $this->database->fetch_all($query);
 	}
 
 	function getListByLetter ($letter)
@@ -350,18 +339,7 @@ class manager
 		ORDER BY name;";
 		$query = $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
-		}
+		return $this->database->fetch_all($query);
 	}
 
 	function getListByOwner ($userId)
@@ -379,18 +357,7 @@ class manager
 
 			$query = $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
 
-			if($this->database->num_rows($query)==0)
-			{
-				return '';
-			}else
-			{
-				while($record=$this->database->fetch_array($query))
-				{
-					$return[] = $record;
-				}
-
-				return $return;
-			}
+			return $this->database->fetch_all($query);
 		} else {
 			return $this->searchDomains('');
 		}
@@ -407,12 +374,7 @@ class manager
 			throw new Exception("No records found");
 		}else
 		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
+			return $this->database->fetch_all($query);
 		}
 	}
 
