@@ -13,7 +13,15 @@ class Services_JSON {
       }
       public function print_exception($ex) {
              header("Content-Type: application/json");
+             http_response_code(500);
              $return = array("status" => "failed", "text" => $ex->getMessage());
              echo $this->encode($return);
+      }
+      public function failure($code, $message) {
+             header("Content-Type: application/json");
+             http_response_code($code);
+             $return = array("status" => "failed", "text" => $message);
+             echo $this->encode($return);
+             exit;
       }
 }

@@ -212,13 +212,7 @@ class manager
 
 		$query = $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			return $this->database->fetch_row($query);
-		}
+		return $this->database->fetch_row($query);
 	}
 
 	function addDomain ($name, $master, $lastCheck, $type, $notifiedSerial, $account)
@@ -446,7 +440,7 @@ class manager
 
 		if($this->database->num_rows($query)==0)
 		{
-			return '';
+			return [];
 		}else
 		{
 			while($record=$this->database->fetch_row($query))

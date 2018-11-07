@@ -120,35 +120,30 @@ if(!$login->isLoggedIn())
 
 		case "deleteZone":
 			if(!$_POST['domainId'])
+				$json->failure(400, "There was no domainId received");
+			try
 			{
-				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				$json->print_json($return);
-			}else
-			{
-				try
-				{
-					$manager->removeAllRecords($_POST['domainId']);
-					$manager->removeZoneByDomainId($_POST['domainId']);
-					$manager->removeDomain($_POST['domainId']);
+				$manager->removeAllRecords($_POST['domainId']);
+				$manager->removeZoneByDomainId($_POST['domainId']);
+				$manager->removeDomain($_POST['domainId']);
 
-					$return = array("status" => "success", "text" => "The zone has been deleted.");
-					$json->print_json($return);
-				}catch(Exception $ex)
-				{
-					$json->print_exception($ex);
-				}
+				$return = array("status" => "success", "text" => "The zone has been deleted.");
+				$json->print_json($return);
+			}catch(Exception $ex)
+			{
+				$json->print_exception($ex);
 			}
+
 			break;
 
 		case "getDomainInfo":
 			if(!$_GET['domainId'])
-			{
-				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				$json->print_json($return);
-				exit;
-			}
+				$json->failure(400, "There was no domainId received");
 
 			$domain = $manager->getDomain($_GET['domainId']);
+			if (!$domain) {
+				$json->failure(404, "Domain not found");
+			}
 			$records = $manager->getAllRecords($_GET['domainId']);
 
 			$return = array('domain' => $domain, 'records' => $records);

@@ -54,22 +54,29 @@ function apiPost(functionCall, postParameters, callbackFunction) {
 	apiCall("POST", functionCall, {}, postParameters, callbackFunction);
 }
 function apiCall(method, functionCall, getParameters, postParameters, callbackFunction) {
+	if (!callbackFunction) callbackFunction = succesFailed;
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
 		try {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
+				console.log(xhr);
 				if (xhr.status === 200) {
-					if (callbackFunction)
+					try {
 						callbackFunction(xhr);
-					else
-						succesFailed(xhr);
-				} else {
+					} catch(ex) {
+						console.warn(ex);
+						message('danger', 'Unhandled Exception in callback', ex);
+					}
+				} else if (xhr.getResponseHeader("Content-Type") == "application/json") {
+					var jsonData = JSON.parse(xhr.responseText);
+					message("danger", "Failed: "+jsonData.text);
+				} else if (xhr.getResponseHeader("Content-Type") == "application/json") {
 					message('danger', 'Error ' + xhr.status + ' -- ' + xhr.statusText + ' -- ' + xhr.responseText);
 				}
 			}
-		}
-		catch( ex ) {
-			message('danger', 'Unhandled Exception: '+ex);
+		} catch(ex) {
+			console.warn(ex);
+			message('danger', 'Unhandled Exception in API helper', ex);
 		}
 	};
 	xhr.open(method, baseurl+"?p="+encodeURIComponent(functionCall)+"&" + buildQuery(getParameters));
@@ -86,26 +93,17 @@ function resetActive() {
 		$("li.active").removeClass("active");
 }
 
-function resultDebug (request)
-{
-	document.getElementById("debug").style.display = 'inline';
-	document.getElementById("debug").innerHTML = request.responseText;
-}
-
-function dummy ()
-{
-	return true;
-}
-
-function message(style,text) {
+function message(style,text,subtext) {
+	if (!subtext) subtext = "";
+	console.info("MESSAGE:",style,text,subtext)
 	var msg = document.getElementById("message");
-	msg.innerHTML = "<div class='alert alert-"+style+"'>" + text + "</div>";
+	msg.innerHTML = "<div class='alert alert-"+style+"'><strong>" + escapeHTML(text) + "</strong><br>" + escapeHTML(subtext) + "</div>";
 	msg.onclick = function() { msg.innerHTML = ""; }
 }
 
 function succesFailed (request)
 {
-	var jsonData = eval('('+request.responseText+')');
+	var jsonData = JSON.parse(request.responseText);
 
 	if(jsonData.status=="success")
 	{
