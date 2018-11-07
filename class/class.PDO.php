@@ -209,5 +209,18 @@ class PDO_DB {
 		$this->setSlaveDSNs($slave);
 		$this->setReplication($replication);
 	}
+
+	function beginTransaction() {
+		if(!$this->master){
+			$this->connect_to_mysql_master();
+		}
+		$this->master->beginTransaction();
+	}
+	function commit() {
+		$this->master->commit();
+	}
+	function rollBack() {
+		$this->master->rollBack();
+	}
 }
 ?>

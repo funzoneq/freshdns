@@ -1,7 +1,7 @@
 <?php
 class manager
 {
-	private $database;
+	public $database;
 
 	/* **************************************** */
 

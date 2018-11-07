@@ -250,6 +250,7 @@ if(!$login->isLoggedIn())
 		case "newDomain":
 			try
 			{
+				$manager->database->beginTransaction();
 				$domainId = $manager->addDomain(trim($_POST['domain']), $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 				$manager->addZone($domainId, $_POST['owner'], "");
 
@@ -271,10 +272,12 @@ if(!$login->isLoggedIn())
 				// IT'S A NEW DOMAIN, RESET THE SOA TO 00
 				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial(), 3600, 1800, 3600000, 172800);
 
+				$manager->database->commit();
 				$return = array("status" => "success", "text" => "The domain has been added.");
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
+				$manager->database->rollBack();
 				$json->print_exception($ex);
 			}
 			break;
