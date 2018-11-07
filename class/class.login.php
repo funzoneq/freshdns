@@ -52,15 +52,15 @@ class login
 	function login ($username, $password)
 	{
 		global $u2f;
-		$query = "SELECT id, fullname, level, password, u2fdata FROM users WHERE username=? AND password=? AND active='1'";
-		$query = $this->database->query_slave($query, [ $username, md5($password) ]);
+		$query = "SELECT id, fullname, level, password, u2fdata FROM users WHERE username=? AND active='1'";
+		$query = $this->database->query_slave($query, [ $username ]);
 		
-		if($this->database->num_rows($query)!=1)
+		$record = $this->database->fetch_row($query);
+		if(!$record || password_verify($password, $record['password']) || md5($password) === $record['password'])
 		{
 			throw new Exception ("User not found or inactive or password invalid");
 		}else
 		{
-			$record = $this->database->fetch_row($query);
 			$_SESSION['userId']	= $record['id'];
 			$_SESSION['fullname']	= $record['fullname'];
 			$_SESSION['level']	= $record['level'];

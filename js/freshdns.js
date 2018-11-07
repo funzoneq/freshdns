@@ -447,17 +447,17 @@ function saveNewDomains (domains, webIP, mailIP, owner, template)
 	});
 }
 
-function userAdmin ()
+function generatePassword ()
 {
-	apiGet("getOwners", {}, showUserAdmin);
-	updateHash('#admin=user');
+	document.getElementById('password').value = Math.random().toString(36).slice(-10);
+	document.getElementById('passwordcheck').value = document.getElementById('password').value;
 }
 
-function showUserAdmin (request)
+function userAdmin ()
 {
-	if (request.readyState==4)
-	{
-		var jsonData = eval('('+request.responseText+')');
+	updateHash('#admin=user');
+	apiGet("getOwners", {}, function (request) {
+		var jsonData = JSON.parse(request.responseText);
 		
 		var result = '<form name="addUserrrr"><table width="800">';
 		result += '<tr><td colspan=3><h3>User list</h3></td></tr>';
@@ -477,7 +477,7 @@ function showUserAdmin (request)
 		result += '<tr><td colspan="3">&nbsp;</td></tr>';
 		result += '<tr><td colspan="3"><h3>Add a user</h3></td></tr>';
 		result += '<tr><td>Username</td><td colspan="2"><input type="text" id="username"></td></tr>';
-		result += '<tr><td>Password</td><td colspan="2"><input type="text" id="password"></td></tr>';
+		result += '<tr><td>Password</td><td colspan="2"><input type="text" id="password"> <input type="button" value="generate" onclick="generatePassword()"></td> </tr>';
 		result += '<tr><td>Password check</td><td colspan="2"><input type="text" id="passwordcheck"></td></tr>';
 		result += '<tr><td>Full name</td><td colspan="2"><input type="text" id="fullname"></td></tr>';
 		result += '<tr><td>E-mail</td><td colspan="2"><input type="text" id="email"></td></tr>';
@@ -486,25 +486,11 @@ function showUserAdmin (request)
 		result += '<tr><td>Level</td><td colspan="2"><select id="level"><option value="1" selected="selected">normal user</option>';
 		result += '<option value="5">moderator</option><option value="10">administrator</option></td></tr>';
 		result += '<tr><td>Active</td><td colspan="2">Yes <input type="radio" name="activeBool" id="activeBool1" value="1" checked="checked" /> No <input type="radio" name="activeBool" id="activeBool0" value="0" /></td></tr>';
-		result += '<tr><td colspan="3"><input type="button" id="save" value="Add user" onclick="addUser(';
-		result += ' document.getElementById(\'username\').value, document.getElementById(\'password\').value, document.getElementById(\'passwordcheck\').value,';
-		result += ' document.getElementById(\'fullname\').value, document.getElementById(\'email\').value, document.getElementById(\'description\').value,';
-		result += ' document.getElementById(\'level\').value, checkActiveBool(document.getElementById(\'activeBool1\'),document.getElementById(\'activeBool0\')),document.getElementById(\'maxdomains\').value);setTimeout(\'userAdmin();\', '+timeoutInMilisec+');"></td></tr>';
+		result += '<tr><td colspan="3"><input type="button" id="save" value="Add user" onclick="addUser();"></td></tr>';
 		result += '</table></form>';
 		
 		document.getElementById("body").innerHTML = result;
-	}
-}
-
-function checkActiveBool (bool0, bool1)
-{
-	if (bool0.checked)
-	{
-		return bool0.value;
-	}else
-	{
-		return bool1.value;
-	}
+	});
 }
 
 function deleteUser (userId)
@@ -575,19 +561,23 @@ function removeU2fKey(index) {
 	saveUserFromForm();
 }
 
-function addUser (username, password, passwordcheck, fullname, email, description, level, active, maxdomains)
+function addUser ()
 {
+	if (document.getElementById('passwordcheck').value !== document.getElementById('password').value) {
+		alert("Password and password check don't match.");
+		return;
+	}
 	apiPost("addUser", {
-		"username": username,
-		"password": password,
-		"passwordcheck": passwordcheck,
-		"fullname": fullname,
-		"email": email,
-		"description": description,
-		"level": level,
-		"active": active,
-		"maxdomains": maxdomains,
+		"username": document.getElementById('username').value,
+		"password": document.getElementById('password').value,
+		"fullname": document.getElementById('fullname').value,
+		"email": document.getElementById('email').value,
+		"description": document.getElementById('description').value,
+		"level": document.getElementById('level').value,
+		"active": document.getElementById('activeBool1').checked?'1':'0',
+		"maxdomains": document.getElementById('maxdomains').value,
 	});
+	setTimeout('userAdmin();', timeoutInMilisec);
 }
 
 function saveUserFromForm() {

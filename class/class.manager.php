@@ -26,7 +26,7 @@ class manager
 
 		if($this->database->createModel('users', [
 			'username' => $username,
-			'password' => $password,
+			'password' => password_hash($password, PASSWORD_DEFAULT),
 			'fullname' => $fullname, 
 			'email' => $email, 
 			'description' => $description, 
@@ -86,7 +86,7 @@ class manager
 
 		if($password!="")
 		{
-			$updateSet['password'] = md5($password);
+			$updateSet['password'] = password_hash($password, PASSWORD_DEFAULT);
 		}
 
 		
