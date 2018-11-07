@@ -228,27 +228,17 @@ class manager
 			if(!$this->canAddDomainCheckMax($_SESSION['userId']))
 			{
 				throw new Exception("Max domain setting reached. Please ask your host to update your max domains setting.");
-				$error = 1;
 			}
 		}
 
-		if($error != 1)
-		{
-			if($this->database->createModel('domains', [
-				"name" => trim($name),
-				"master" => $master,
-				"last_check" => $lastCheck,
-				"type" => $type,
-				"notified_serial" => $notifiedSerial,
-				"account" => $account
-			]))
-			{
-				return mysql_insert_id();
-			}else
-			{
-				throw new Exception($this->database->error());
-			}
-		}
+		return $this->database->createModel('domains', [
+			"name" => trim($name),
+			"master" => $master,
+			"last_check" => $lastCheck,
+			"type" => $type,
+			"notified_serial" => $notifiedSerial,
+			"account" => $account
+		]);
 	}
 
 	function updateDomain ($orgDomainId, $domainId, $name, $master, $lastCheck, $type, $notifiedSerial, $account)
@@ -400,7 +390,7 @@ class manager
 
 	function addRecord ($domainId, $name, $type, $content, $ttl, $prio, $changeDate)
 	{
-		if($this->database->insertModel('records', [
+		if($this->database->createModel('records', [
 			"domain_id" => $domainId,
 			"name" => trim($name),
 			"type" => $type,

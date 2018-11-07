@@ -522,7 +522,7 @@ function saveNewRecord (domain, webIP, mailIP, owner, template)
 	new Ajax.Request(baseurl+"?p=newDomain", 
 	{
 		method:"post",
-		postBody:"domain="+encodeURIComponent(domain)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template),
+		postBody:"domain="+encodeURIComponent(domain)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template)+"&type=NATIVE",
 		asynchronous:true,
 		onSuccess:succesFailed,
 		onFailure:resultError

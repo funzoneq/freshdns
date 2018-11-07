@@ -198,7 +198,7 @@ class PDO_DB {
 		}
 		$query .= implode(", ", $queryParts);
 		$res = $this->query_master($query, $queryArgs);
-		return $res;
+		return $this->master->lastInsertId();
 	}
 	
 	function setVars ($username, $password, $master, $slave = array(), $replication='')
