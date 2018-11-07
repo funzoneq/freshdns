@@ -11,11 +11,12 @@ class Services_JSON {
              header("Content-Type: application/json");
              echo $this->encode($obj);
       }
-      public function print_exception($ex) {
+      public function exception($code, $ex) {
              header("Content-Type: application/json");
-             http_response_code(500);
+             http_response_code($code);
              $return = array("status" => "failed", "text" => $ex->getMessage());
              echo $this->encode($return);
+             exit;
       }
       public function failure($code, $message) {
              header("Content-Type: application/json");

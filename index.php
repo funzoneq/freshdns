@@ -26,8 +26,7 @@ if (count($_POST)) {
 	try {
 		$login->xsrfCheck();
 	} catch(Exception $ex) {
-		$json->print_exception($ex);
-		exit;
+		$json->exception(403, $ex);
 	}
 }
 
@@ -65,7 +64,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(403, $ex);
 			}
 			break;
 
@@ -76,7 +75,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(403, $ex);
 			}
 			break;
 
@@ -131,7 +130,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 
 			break;
@@ -164,7 +163,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -184,7 +183,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -198,7 +197,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -212,7 +211,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -225,7 +224,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -236,7 +235,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -282,7 +281,7 @@ if(!$login->isLoggedIn())
 			}catch (Exception $ex)
 			{
 				$manager->database->rollBack();
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -335,7 +334,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -352,7 +351,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -365,7 +364,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$json->print_exception($ex);
+				$json->exception(500, $ex);
 			}
 			break;
 
