@@ -67,7 +67,6 @@ include_once(CLASSES.'class.database.php');
 include_once(CLASSES.'class.PDO.php');
 include_once(CLASSES.'class.manager.php');
 include_once(CLASSES.'class.login.php');
-include_once(CLASSES.'class.xmlcreator.php');
 include_once(CLASSES.'class.JSON.php');
 
 /*****************************************************/
