@@ -110,7 +110,7 @@ if(!$login->isLoggedIn())
 			break;
 
 		case "deleteZone":
-			if(!$_GET['domainId'])
+			if(!$_POST['domainId'])
 			{
 				$return = array("status" => "failed", "text" => "There was no domainId recieved");
 				$json->print_json($return);
@@ -118,9 +118,9 @@ if(!$login->isLoggedIn())
 			{
 				try
 				{
-					$manager->removeAllRecords($_GET['domainId']);
-					$manager->removeZoneByDomainId($_GET['domainId']);
-					$manager->removeDomain($_GET['domainId']);
+					$manager->removeAllRecords($_POST['domainId']);
+					$manager->removeZoneByDomainId($_POST['domainId']);
+					$manager->removeDomain($_POST['domainId']);
 
 					$return = array("status" => "success", "text" => "The zone has been deleted.");
 					$json->print_json($return);

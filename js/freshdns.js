@@ -215,9 +215,10 @@ function deleteZone (domainId)
 {
 	if(confirm("Are you sure you want to delete this domain?"))
 	{
-		new Ajax.Request(baseurl+"?p=deleteZone&domainId="+encodeURIComponent(domainId), 
+		new Ajax.Request(baseurl+"?p=deleteZone",
 		{
-			method:"get",
+			method:"post",
+			postBody:"domainId="+encodeURIComponent(domainId),
 			asynchronous:true,
 			onSuccess:succesFailed,
 			onFailure:resultError
@@ -372,9 +373,10 @@ function removeRecord (recordId, domainId)
 {
 	if(confirm("Are you sure you want to delete the record?"))
 	{
-		new Ajax.Request(baseurl+"?p=removeRecord&recordId="+encodeURIComponent(recordId)+"&domainId="+encodeURIComponent(domainId), 
+		new Ajax.Request(baseurl+"?p=removeRecord",
 		{
-			method:"get",
+			method:"post",
+			postBody:"recordId="+encodeURIComponent(recordId)+"&domainId="+encodeURIComponent(domainId),
 			asynchronous:true,
 			onSuccess:succesFailed,
 			onFailure:resultError
