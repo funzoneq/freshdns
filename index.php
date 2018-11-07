@@ -56,8 +56,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -68,8 +67,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -128,8 +126,7 @@ if(!$login->isLoggedIn())
 					$json->print_json($return);
 				}catch(Exception $ex)
 				{
-					$return = array("status" => "failed", "text" => $ex->getMessage());
-					$json->print_json($return);
+					$json->print_exception($ex);
 				}
 			}
 			break;
@@ -163,8 +160,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -184,23 +180,21 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
 		case "removeRecord":
 			try
 			{
-				$manager->removeRecord($_GET['recordId'], $_GET['domainId']);
+				$manager->removeRecord($_POST['recordId'], $_POST['domainId']);
 				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been deleted.");
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -214,8 +208,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -228,8 +221,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -240,8 +232,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -284,8 +275,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -338,8 +328,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -356,8 +345,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 
@@ -370,8 +358,7 @@ if(!$login->isLoggedIn())
 				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				$json->print_json($return);
+				$json->print_exception($ex);
 			}
 			break;
 

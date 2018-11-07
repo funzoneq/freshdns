@@ -11,4 +11,9 @@ class Services_JSON {
              header("Content-Type: application/json");
              echo $this->encode($obj);
       }
+      public function print_exception($ex) {
+             header("Content-Type: application/json");
+             $return = array("status" => "failed", "text" => $ex->getMessage());
+             echo $this->encode($return);
+      }
 }
