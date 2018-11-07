@@ -56,7 +56,7 @@ class login
 		$query = $this->database->query_slave($query, [ $username ]);
 		
 		$record = $this->database->fetch_row($query);
-		if(!$record || password_verify($password, $record['password']) || md5($password) === $record['password'])
+		if(!$record || !(password_verify($password, $record['password']) || md5($password) === $record['password']))
 		{
 			throw new Exception ("User not found or inactive or password invalid");
 		}else

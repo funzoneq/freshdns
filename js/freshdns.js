@@ -585,7 +585,8 @@ function saveUserFromForm() {
 		'description': document.getElementById('description').value,
 		'level': document.getElementById('level').value,
 		'active': document.getElementById('active').value,
-		'maxdomains': document.getElementById('maxdomains').value
+		'maxdomains': document.getElementById('maxdomains').value,
+		'u2fdata': JSON.stringify(editUser_u2ftokens)
 	});
 }
 

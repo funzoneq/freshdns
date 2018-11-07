@@ -57,7 +57,8 @@ class manager
 			$userdata = $this->database->fetch_row($query);
 			$u2fdata = array();
 			if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
-
+			if (!is_array($u2fdata)) $u2fdata = array();
+			
 			list($req,$sigs) = $u2f->getRegisterData($u2fdata);
 			$_SESSION['regReq'] = json_encode($req);
 			$userdata['u2f_req'] = $req;
