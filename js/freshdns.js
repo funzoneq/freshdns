@@ -36,10 +36,9 @@ function updateHash(hash) {
 }
 
 function escapeHTML(str) {
-	if (!str) return "";
-	return str.replace(/'/g, "&apos;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	if (str===undefined || str===null) return "";
+	return (""+str).replace(/'/g, "&apos;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-
 
 function buildQuery(params) {
 	return Object.keys(params).map(function(key) {
@@ -137,13 +136,8 @@ function list (letter)
 {
 	resetActive();
 	$("li[data-navigate-list='"+letter+"']").addClass("active");
-	apiGet("letterlist", { "letter":letter }, showList);
 	updateHash('#list=' + letter);
-}
-
-function showList (request)
-{
-	if (request.readyState==4) {
+	apiGet("letterlist", { "letter":letter }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
@@ -162,17 +156,12 @@ function showList (request)
 		output += '</table>';
 		
 		document.getElementById("body").innerHTML = output;
-	}
+	});
 }
 
 function liveSearchStart()
 {
-	apiGet("livesearch", { "q":document.getElementById('livesearch').value }, liveSearchResults);
-}
-
-function liveSearchResults (request) 
-{
-	if (request.readyState==4) {
+	apiGet("livesearch", { "q":document.getElementById('livesearch').value }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
@@ -191,17 +180,12 @@ function liveSearchResults (request)
 		output += '</table>';
 		
 		document.getElementById("body").innerHTML = output;
-	}
+	});
 }
 
 function ownersList (userId)
 {
-	apiGet("ownerslist", { "userId":userId }, showOwnersList);
-}
-
-function showOwnersList (request)
-{
-	if (request.readyState==4) {
+	apiGet("ownerslist", { "userId":userId }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
 		var jsonData = eval('('+request.responseText+')');
@@ -220,7 +204,7 @@ function showOwnersList (request)
 		output += '</table>';
 		
 		document.getElementById("body").innerHTML = output;
-	}
+	});
 }
 
 function deleteZone (domainId)
@@ -234,90 +218,78 @@ function deleteZone (domainId)
 function editDomain (domainId)
 {
 	updateHash('#domain=' + domainId);
-	apiGet("getDomainInfo", { "domainId":encodeURIComponent(domainId) }, editDomainWindow);
-}
+	apiGet("getDomainInfo", { "domainId":encodeURIComponent(domainId) }, function(request) {
+		var jsonData = currentEditedDomain = JSON.parse(request.responseText);
+		
+		apiGet("getOwners", {}, changeOwnersSelect);
 
-function editDomainWindow (request)
-{	
-	if (request.readyState==4)
-	{
-		if(request.responseText=='failed')
+		var name = jsonData.domain.name;
+		var result  = '<p><table>';
+		result += '  <tr>';
+		result += '	<td><h3>Edit domain :: <b>'+name+'</b> ('+jsonData.records.length+')</h3></td>';
+		result += '  </tr>';
+		result += '  <tr>';
+		result += '	<td><form name="editDomain" action="javascript:saveAllRecords(document.editDomain);">';
+		result += '	<input type="hidden" id="domainId" value="'+jsonData.domain.id+'" /><table id="recordsTable">';
+		result += '	<tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+		
+		for(i=0; i<jsonData.records.length; i++)
 		{
-				message("danger", "The action you performed failed.");
-		}else
-		{
-			var jsonData = currentEditedDomain = JSON.parse(request.responseText);
-			
-			apiGet("getOwners", {}, changeOwnersSelect);
-
-			var name = jsonData.domain.name;
-			var result  = '<p><table>';
-			result += '  <tr>';
-			result += '	<td><h3>Edit domain :: <b>'+name+'</b> ('+jsonData.records.length+')</h3></td>';
-			result += '  </tr>';
-			result += '  <tr>';
-			result += '	<td><form name="editDomain" action="javascript:saveAllRecords(document.editDomain);">';
-			result += '	<input type="hidden" id="domainId" value="'+jsonData.domain.id+'" /><table id="recordsTable">';
-			result += '	<tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>';
-			
-			for(i=0; i<jsonData.records.length; i++)
-			{
-				var r = jsonData.records[i];
-				result += '<tr>';
-				result += '<td><input type="text" value="'+escapeHTML(r.name.replace(name, ''))+'" id="name['+i+']"><input type="hidden" value="'+r.id+'" id="id['+i+']"></td>';
-				result += '<td><input type="text" size="6" class="type" value="'+escapeHTML(r.type)+'" id="type['+i+']"></td>';
-				result += '<td><input type="text" size="50" value="'+escapeHTML(r.content)+'" id="content['+i+']"></td>';
-				result += '<td><input type="text" size="2" class="num" value="'+escapeHTML(r.prio)+'" id="prio['+i+']"></td>';
-				result += '<td><input type="text" size="4" class="num" value="'+escapeHTML(r.ttl)+'" id="ttl['+i+']"></td>';
-				result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" value="delete" id="delete['+i+']"></td>';
-				result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
-				result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
-				result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
-				result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="save['+i+']" value="save record"></td>';
-				result += '</tr>';
-			}
-			
-			result += '	<tr><td colspan="7"><input type="submit" value="save all changes"></td></tr></table></form></td>';
-			result += '  </tr>';
-			result += '  <tr>';
-			result += '	<td><h3>Add a record</h3></td>';
-			result += '  </tr>';
-			result += '  <tr>';
-			result += '	   <td><table>';
-			result += '	   <tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td></tr>';
-			result += '    <tr><td><input type="text" value="'+escapeHTML(lastAddedName?lastAddedName:r.name.replace(name,''))+'" id="new[name]" /></td>';
-			result += '    <td><select id="new[type]"><option selected="selected" value="A">A</option>';
-			result += '    <option value="AAAA">AAAA</option><option value="CNAME">CNAME</option>';
-			result += '    <option value="HINFO">HINFO</option><option value="MX">MX</option>';
-			result += '    <option value="NAPTR">NAPTR</option><option value="NS">NS</option>';
-			result += '    <option value="PTR">PTR</option><option value="SOA">SOA</option>';
-			result += '    <option value="TXT">TXT</option><option value="URL">URL</option>';
-			result += '    <option value="SRV">SRV</option><option value="MBOXFW">MBOXFW</option></select></td>';
-			result += '	   <td><input type="content" size="50" value="'+escapeHTML(lastAddedContent)+'" id="new[content]" /></td>';
-			result += '	   <td><input type="prio" size="2" value="0" id="new[prio]" /"></td>';
-			result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';
-			result += '	   <td><input type="button" onclick="newRecord('+jsonData.domain.id+', document.getElementById(\'new[name]\').value, ';
-			result += 'document.getElementById(\'new[type]\').value, document.getElementById(\'new[content]\').value, ';
-			result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="new[save]" value="save" />';
-			result += '	</tr></table></td>';
-			result += '  </tr>';
-			
-			if(userlevel >= 5)
-			{
-				result += '  <tr>';
-				result += '     <td><h3>Transfer domain</h3></td>';
-				result += '  </tr>';
-				result += '  <tr>';
-				result += '    <td>Transfer domain to <select id="owner"></select>';
-				result += ' <input type="button" onclick="transferDomain('+jsonData.domain.id+', document.getElementById(\'owner\').value);" value="transfer" /></td>';
-				result += '  </tr>';
-				result += '</table></p>';
-			}
-			
-			document.getElementById('body').innerHTML = result;
-			if (lastAddedType) document.getElementById("new[type]").value = lastAddedType;
+			var r = jsonData.records[i];
+			result += '<tr>';
+			result += '<td><input type="text" value="'+escapeHTML(r.name.replace(name, ''))+'" id="name['+i+']"><input type="hidden" value="'+r.id+'" id="id['+i+']"></td>';
+			result += '<td><input type="text" size="6" class="type" value="'+escapeHTML(r.type)+'" id="type['+i+']"></td>';
+			result += '<td><input type="text" size="50" value="'+escapeHTML(r.content)+'" id="content['+i+']"></td>';
+			result += '<td><input type="text" size="2" class="num" value="'+escapeHTML(r.prio)+'" id="prio['+i+']"></td>';
+			result += '<td><input type="text" size="4" class="num" value="'+escapeHTML(r.ttl)+'" id="ttl['+i+']"></td>';
+			result += '<td><input type="button" onclick="removeRecord('+r.id+', '+jsonData.domain.id+');setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" value="delete" id="delete['+i+']"></td>';
+			result += '<td><input type="button" onclick="javascript:saveRecord('+jsonData.domain.id+', document.getElementById(\'id['+i+']\').value, ';
+			result += 'document.getElementById(\'name['+i+']\').value, document.getElementById(\'type['+i+']\').value, ';
+			result += 'document.getElementById(\'content['+i+']\').value, document.getElementById(\'prio['+i+']\').value, ';
+			result += 'document.getElementById(\'ttl['+i+']\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="save['+i+']" value="save record"></td>';
+			result += '</tr>';
 		}
-	}
+		
+		result += '	<tr><td colspan="7"><input type="submit" value="save all changes"></td></tr></table></form></td>';
+		result += '  </tr>';
+		result += '  <tr>';
+		result += '	<td><h3>Add a record</h3></td>';
+		result += '  </tr>';
+		result += '  <tr>';
+		result += '	   <td><table>';
+		result += '	   <tr><td><b>name</b></td><td><b>type</b></td><td><b>content</b></td><td><b>prio</b></td><td><b>ttl</b></td><td>&nbsp;</td></tr>';
+		result += '    <tr><td><input type="text" value="'+escapeHTML(lastAddedName?lastAddedName:r.name.replace(name,''))+'" id="new[name]" /></td>';
+		result += '    <td><select id="new[type]"><option selected="selected" value="A">A</option>';
+		result += '    <option value="AAAA">AAAA</option><option value="CNAME">CNAME</option>';
+		result += '    <option value="HINFO">HINFO</option><option value="MX">MX</option>';
+		result += '    <option value="NAPTR">NAPTR</option><option value="NS">NS</option>';
+		result += '    <option value="PTR">PTR</option><option value="SOA">SOA</option>';
+		result += '    <option value="TXT">TXT</option><option value="URL">URL</option>';
+		result += '    <option value="SRV">SRV</option><option value="MBOXFW">MBOXFW</option></select></td>';
+		result += '	   <td><input type="content" size="50" value="'+escapeHTML(lastAddedContent)+'" id="new[content]" /></td>';
+		result += '	   <td><input type="prio" size="2" value="0" id="new[prio]" /"></td>';
+		result += '	   <td><input type="ttl" size="4" value="3600" id="new[ttl]" /></td>';
+		result += '	   <td><input type="button" onclick="newRecord('+jsonData.domain.id+', document.getElementById(\'new[name]\').value, ';
+		result += 'document.getElementById(\'new[type]\').value, document.getElementById(\'new[content]\').value, ';
+		result += 'document.getElementById(\'new[prio]\').value, document.getElementById(\'new[ttl]\').value); setTimeout(\'editDomain('+jsonData.domain.id+');\', '+timeoutInMilisec+');" id="new[save]" value="save" />';
+		result += '	</tr></table></td>';
+		result += '  </tr>';
+		
+		if(userlevel >= 5)
+		{
+			result += '  <tr>';
+			result += '     <td><h3>Transfer domain</h3></td>';
+			result += '  </tr>';
+			result += '  <tr>';
+			result += '    <td>Transfer domain to <select id="owner"></select>';
+			result += ' <input type="button" onclick="transferDomain('+jsonData.domain.id+', document.getElementById(\'owner\').value);" value="transfer" /></td>';
+			result += '  </tr>';
+			result += '</table></p>';
+		}
+		
+		document.getElementById('body').innerHTML = result;
+		if (lastAddedType) document.getElementById("new[type]").value = lastAddedType;
+	});
 }
 
 function saveAllRecords (input)
