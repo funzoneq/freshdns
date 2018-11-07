@@ -35,6 +35,16 @@ function updateHash(hash) {
 	location.hash = hash;
 }
 
+function apiPost(functionCall, postParameters, callbackFunction) {
+	new Ajax.Request(baseurl+"?p="+encodeURIComponent(functionCall),
+		{
+			method:"post",
+			postBody:$H(postParameters).toQueryString(),
+			asynchronous:true,
+			onSuccess:callbackFunction || succesFailed,
+			onFailure:resultError
+		});
+}
 
 function resetActive() {
 		$("li.active").removeClass("active");
@@ -217,14 +227,7 @@ function deleteZone (domainId)
 {
 	if(confirm("Are you sure you want to delete this domain?"))
 	{
-		new Ajax.Request(baseurl+"?p=deleteZone",
-		{
-			method:"post",
-			postBody:"domainId="+encodeURIComponent(domainId),
-			asynchronous:true,
-			onSuccess:succesFailed,
-			onFailure:resultError
-		});
+		apiPost("deleteZone", { "domainId": domainId });
 	}
 }
 
@@ -331,7 +334,7 @@ function editDomainWindow (request)
 
 function saveAllRecords (input)
 {
-	var postBody = 'dummy=true';
+	var postBody = {};
 	
 	for(i=0; i<input.length; i++)
 	{
@@ -344,70 +347,43 @@ function saveAllRecords (input)
 		}
 		if (ident.match(/name\[/)) value += currentEditedDomain.domain.name;
 		
-		postBody += '&'+encodeURIComponent(ident)+'='+encodeURIComponent(value);
+		postBody[ident] = value;
 	}
 	
-	new Ajax.Request(baseurl+"?p=saveAllRecords",
-		{
-			method:"post",
-			postBody:postBody,
-			asynchronous:true,
-			onSuccess:succesFailed,
-			onFailure:resultError
-		});
+	apiPost("saveAllRecords", postBody);
 	
 	setTimeout('editDomain('+domainId+');', timeoutInMilisec);
 }
 
 function transferDomain (domainId, owner)
 {
-	new Ajax.Request(baseurl+"?p=transferDomain",
-        {
-            method:"post",
-            postBody:"domainId="+encodeURIComponent(domainId)+"&owner="+encodeURIComponent(owner),
-            asynchronous:true,
-            onSuccess:succesFailed,
-            onFailure:resultError
-        });
+	apiPost("transferDomain", { "domainId": domainId, "owner": owner });
 }
 
 function removeRecord (recordId, domainId)
 {
 	if(confirm("Are you sure you want to delete the record?"))
 	{
-		new Ajax.Request(baseurl+"?p=removeRecord",
-		{
-			method:"post",
-			postBody:"recordId="+encodeURIComponent(recordId)+"&domainId="+encodeURIComponent(domainId),
-			asynchronous:true,
-			onSuccess:succesFailed,
-			onFailure:resultError
-		});
+		apiPost("removeRecord", { "domainId": domainId, "recordId": recordId });
 	}
 }
 
 function saveRecord(domainId, recordId, name, type, content, prio, ttl)
 {
-	new Ajax.Request(baseurl+"?p=saveRecord", 
-	{
-		method:"post",
-		postBody:"domainId="+encodeURIComponent(domainId)+"&recordId="+encodeURIComponent(recordId)+"&name="+encodeURIComponent(name + currentEditedDomain.domain.name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("saveRecord", {
+		"domainId": domainId, "recordId": recordId,
+		"name": name + currentEditedDomain.domain.name,
+		"type": type, "content": content, "prio": prio, "ttl": ttl
 	});
 }
 
 function newRecord (domainId, name, type, content, prio, ttl)
 {
 	lastAddedName = name; lastAddedType = type; lastAddedContent = content;
-	new Ajax.Request(baseurl+"?p=newRecord", 
-	{
-		method:"post",
-		postBody:"domainId="+encodeURIComponent(domainId)+"&name="+encodeURIComponent(name + currentEditedDomain.domain.name)+"&type="+encodeURIComponent(type)+"&content="+encodeURIComponent(content)+"&prio="+encodeURIComponent(prio)+"&ttl="+encodeURIComponent(ttl),
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("newRecord", {
+		"domainId": domainId,
+		"name": name + currentEditedDomain.domain.name,
+		"type": type, "content": content, "prio": prio, "ttl": ttl
 	});
 }
 
@@ -521,27 +497,20 @@ function changeTemplateSelect (request)
 }
 
 function saveNewRecord (domain, webIP, mailIP, owner, template)
-{	
-
-	new Ajax.Request(baseurl+"?p=newDomain", 
-	{
-		method:"post",
-		postBody:"domain="+encodeURIComponent(domain)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template)+"&type=NATIVE",
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+{
+	apiPost("newDomain", {
+		"domain": domain,
+		"webIP": webIP, "mailIP": mailIP,
+		"owner": owner, "template": template, "type": "NATIVE"
 	});
 }
 
 function saveNewDomains (domains, webIP, mailIP, owner, template)
 {
-	new Ajax.Request(baseurl+"?p=newDomains", 
-	{
-		method:"post",
-		postBody:"domains="+encodeURIComponent(domains)+"&webIP="+encodeURIComponent(webIP)+"&mailIP="+encodeURIComponent(mailIP)+"&owner="+encodeURIComponent(owner)+"&template="+encodeURIComponent(template),
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("newDomains", {
+		"domains": domains,
+		"webIP": webIP, "mailIP": mailIP,
+		"owner": owner, "template": template, "type": "NATIVE"
 	});
 }
 
@@ -615,13 +584,8 @@ function deleteUser (userId)
 {
 	if(confirm("Are you sure you want to delete this user, and all it's data?"))
 	{
-		new Ajax.Request(baseurl+"?p=deleteUser",
-		{
-			method:"post",
-			postBody:"userId="+userId,
-			asynchronous:true,
-			onSuccess:succesFailed,
-			onFailure:resultError
+		apiPost("deleteUser", {
+			"userId": userId
 		});
 	}
 }
@@ -629,14 +593,7 @@ function deleteUser (userId)
 function editUser (userId)
 {
 	console.log("editUser",userId);
-	new Ajax.Request(baseurl+"?p=getUser", 
-	{
-		method:"post",
-		postBody:"userId="+userId,
-		asynchronous:true,
-		onSuccess:showEditUser,
-		onFailure:resultError
-	});
+	apiPost("getUser", { "userId": userId }, showEditUser);
 	updateHash('#user=' + userId);
 }
 
@@ -696,30 +653,30 @@ function removeU2fKey(index) {
 
 function addUser (username, password, passwordcheck, fullname, email, description, level, active, maxdomains)
 {
-	new Ajax.Request(baseurl+"?p=addUser", 
-	{
-		method:"post",
-		postBody:"username="+username+"&password="+password+"&passwordcheck="+passwordcheck+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains,
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("addUser", {
+		"username": username,
+		"password": password,
+		"passwordcheck": passwordcheck,
+		"fullname": fullname,
+		"email": email,
+		"description": description,
+		"level": level,
+		"active": active,
+		"maxdomains": maxdomains,
 	});
 }
 
 function saveUserFromForm() {
-	saveUser(document.getElementById('userId').value, document.getElementById('username').value, document.getElementById('password').value,
-		document.getElementById('fullname').value, document.getElementById('email').value, document.getElementById('description').value,
-		document.getElementById('level').value, document.getElementById('active').value, document.getElementById('maxdomains').value);
-}
-function saveUser (userId, username, password, fullname, email, description, level, active, maxdomains)
-{
-	new Ajax.Request(baseurl+"?p=editUser", 
-	{
-		method:"post",
-		postBody:"userId="+userId+"&username="+username+"&password="+password+"&fullname="+fullname+"&email="+email+"&description="+description+"&level="+level+"&active="+active+"&maxdomains="+maxdomains+"&u2fdata="+JSON.stringify(editUser_u2ftokens),
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("editUser", {
+		'userId': document.getElementById('userId').value,
+		'username': document.getElementById('username').value,
+		'password': document.getElementById('password').value,
+		'fullname': document.getElementById('fullname').value,
+		'email': document.getElementById('email').value,
+		'description': document.getElementById('description').value,
+		'level': document.getElementById('level').value,
+		'active': document.getElementById('active').value,
+		'maxdomains': document.getElementById('maxdomains').value
 	});
 }
 
@@ -749,13 +706,9 @@ function loginForm ()
 
 function login (username, password)
 {
-	new Ajax.Request(baseurl+"?p=doLogin", 
-	{
-		method:"post",
-		postBody:"username="+encodeURIComponent(username)+"&password="+encodeURIComponent(password),
-		asynchronous:true,
-		onSuccess:succesFailed,
-		onFailure:resultError
+	apiPost("doLogin", {
+		"username": username,
+		"password": password
 	});
 }
 
@@ -763,9 +716,9 @@ function doU2fSignature(req) {
 	setTimeout(function() {
 		u2f.sign(req.challenge[0].appId, req.challenge[0].challenge, req.challenge, function(data) {
 			document.getElementById("login").innerHTML="Login successful, redirecting ...";
-			new Ajax.Request(baseurl+"?p=checkU2f", {
-				method:"post", postBody: "username="+encodeURIComponent(req.username)+"&auth="+encodeURIComponent(JSON.stringify(data)),
-				asynchronous:true, onSuccess:succesFailed, onFailure:resultError
+			apiPost("checkU2f", {
+				"username": req.username,
+				"auth": JSON.stringify(data)
 			});
 		});
 		document.getElementById("login").innerHTML="<h2>Please touch U2F device...</h2>";
