@@ -35,31 +35,56 @@ function updateHash(hash) {
 	location.hash = hash;
 }
 
+function escapeHTML(str) {
+	if (!str) return "";
+	return str.replace(/'/g, "&apos;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+
+function buildQuery(params) {
+	return Object.keys(params).map(function(key) {
+		return encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+	}).join("&");
+}
+
+function apiGet(functionCall, query, callbackFunction) {
+	apiCall("GET", functionCall, query, null, callbackFunction);
+}
 function apiPost(functionCall, postParameters, callbackFunction) {
-	postParameters['xsrf_token'] = window.xsrf_token;
-	new Ajax.Request(baseurl+"?p="+encodeURIComponent(functionCall),
-		{
-			method:"post",
-			postBody:$H(postParameters).toQueryString(),
-			asynchronous:true,
-			onSuccess:callbackFunction || succesFailed,
-			onFailure:resultError
-		});
+	apiCall("POST", functionCall, {}, postParameters, callbackFunction);
+}
+function apiCall(method, functionCall, getParameters, postParameters, callbackFunction) {
+	var xhr = new XMLHttpRequest();
+	xhr.onreadystatechange = function() {
+		try {
+			if (xhr.readyState === XMLHttpRequest.DONE) {
+				if (xhr.status === 200) {
+					if (callbackFunction)
+						callbackFunction(xhr);
+					else
+						succesFailed(xhr);
+				} else {
+					message('danger', 'Error ' + xhr.status + ' -- ' + xhr.statusText + ' -- ' + xhr.responseText);
+				}
+			}
+		}
+		catch( ex ) {
+			message('danger', 'Unhandled Exception: '+ex);
+		}
+	};
+	xhr.open(method, baseurl+"?p="+encodeURIComponent(functionCall)+"&" + buildQuery(getParameters));
+	if (!postParameters) {
+		xhr.send();
+	} else {
+		postParameters['xsrf_token'] = window.xsrf_token;
+		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		xhr.send(buildQuery(postParameters));
+	}
 }
 
 function resetActive() {
 		$("li.active").removeClass("active");
 }
-function resultError (request) {
-		message('danger', 'Error ' + request.status + ' -- ' + request.statusText + ' -- ' + request.responseText);
-}
-
-Ajax.Responders.register({
-	onException: function(req, ex) {
-		console.warn("Unhandled Exception in AJAX handler",ex);
-		message('danger', 'Unhandled Exception: '+ex);
-	}
-});
 
 function resultDebug (request)
 {
@@ -80,29 +105,23 @@ function message(style,text) {
 
 function succesFailed (request)
 {
-	if (request.readyState==4)
+	var jsonData = eval('('+request.responseText+')');
+
+	if(jsonData.status=="success")
 	{
-		// JAVASCRIPT DEBUG INFORMATION
-		//document.getElementById("query").innerHTML = request.responseText;
-		
-		var jsonData = eval('('+request.responseText+')');
+		message("success", jsonData.text);
+	}else
+	{
+		message("danger", "Failed: "+jsonData.text);
+	}
+	
+	if(jsonData.reload=="yes")
+	{
+		window.location.reload();
+	}
 
-		if(jsonData.status=="success")
-		{
-			message("success", jsonData.text);
-		}else
-		{
-			message("danger", "Failed: "+jsonData.text);
-		}
-		
-		if(jsonData.reload=="yes")
-		{
-			window.location.reload();
-		}
-
-		if (jsonData.u2f_challenge) {
-			doU2fSignature(jsonData.u2f_challenge);
-		}
+	if (jsonData.u2f_challenge) {
+		doU2fSignature(jsonData.u2f_challenge);
 	}
 }
 
@@ -120,13 +139,7 @@ function list (letter)
 {
 	resetActive();
 	$("li[data-navigate-list='"+letter+"']").addClass("active");
-	new Ajax.Request(baseurl+"?p=letterlist&letter="+letter, 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:showList,
-		onFailure:resultError
-	});
+	apiGet("letterlist", { "letter":letter }, showList);
 	updateHash('#list=' + letter);
 }
 
@@ -156,13 +169,7 @@ function showList (request)
 
 function liveSearchStart()
 {
-	new Ajax.Request(baseurl+"?p=livesearch&q="+document.getElementById('livesearch').value, 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:liveSearchResults,
-		onFailure:resultError
-	});
+	apiGet("livesearch", { "q":document.getElementById('livesearch').value }, liveSearchResults);
 }
 
 function liveSearchResults (request) 
@@ -191,13 +198,7 @@ function liveSearchResults (request)
 
 function ownersList (userId)
 {
-	new Ajax.Request(baseurl+"?p=ownerslist&userId="+userId, 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:showOwnersList,
-		onFailure:resultError
-	});
+	apiGet("ownerslist", { "userId":userId }, showOwnersList);
 }
 
 function showOwnersList (request)
@@ -235,13 +236,7 @@ function deleteZone (domainId)
 function editDomain (domainId)
 {
 	updateHash('#domain=' + domainId);
-	new Ajax.Request(baseurl+"?p=getDomainInfo&domainId="+encodeURIComponent(domainId), 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:editDomainWindow,
-		onFailure:resultError
-	});
+	apiGet("getDomainInfo", { "domainId":encodeURIComponent(domainId) }, editDomainWindow);
 }
 
 function editDomainWindow (request)
@@ -255,13 +250,7 @@ function editDomainWindow (request)
 		{
 			var jsonData = currentEditedDomain = JSON.parse(request.responseText);
 			
-			new Ajax.Request(baseurl+"?p=getOwners",
-				{
-					method:"get",
-					asynchronous:true,
-					onSuccess:changeOwnersSelect,
-					onFailure:resultError
-				});
+			apiGet("getOwners", {}, changeOwnersSelect);
 
 			var name = jsonData.domain.name;
 			var result  = '<p><table>';
@@ -390,21 +379,8 @@ function newRecord (domainId, name, type, content, prio, ttl)
 
 function newDomain ()
 {
-	new Ajax.Request(baseurl+"?p=getOwners", 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:changeOwnersSelect,
-		onFailure:resultError
-	});
-	
-	new Ajax.Request(baseurl+"?p=getTemplates", 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:changeTemplateSelect,
-		onFailure:resultError
-	});
+	apiGet("getOwners", {}, changeOwnersSelect);
+	apiGet("getTemplates", {}, changeTemplateSelect);
 	
 	var result  = '<table>';
 	result += '<tr>';
@@ -425,21 +401,8 @@ function newDomain ()
 
 function bulkNewDomain ()
 {
-	new Ajax.Request(baseurl+"?p=getOwners", 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:changeOwnersSelect,
-		onFailure:resultError
-	});
-	
-	new Ajax.Request(baseurl+"?p=getTemplates", 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:changeTemplateSelect,
-		onFailure:resultError
-	});
+	apiGet("getOwners", {}, changeOwnersSelect);
+	apiGet("getTemplates", {}, changeTemplateSelect);
 	
 	var result  = '<table>';
 	result += '<tr>';
@@ -517,13 +480,7 @@ function saveNewDomains (domains, webIP, mailIP, owner, template)
 
 function userAdmin ()
 {
-	new Ajax.Request(baseurl+"?p=getOwners", 
-	{
-		method:"get",
-		asynchronous:true,
-		onSuccess:showUserAdmin,
-		onFailure:resultError
-	});
+	apiGet("getOwners", {}, showUserAdmin);
 	updateHash('#admin=user');
 }
 
