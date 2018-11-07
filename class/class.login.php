@@ -41,7 +41,7 @@ class login
 			throw new Exception ("NoUserFound");
 		}else
 		{
-			$record = $this->database->fetch_array($query);
+			$record = $this->database->fetch_row($query);
 			$_SESSION['userId']	= $record['id'];
 			$_SESSION['fullname']	= $record['fullname'];
 			$_SESSION['level']	= $record['level'];
@@ -74,7 +74,7 @@ class login
 		if($this->database->num_rows($query)!=1) {
 			throw new Exception ("NoUserFound");
 		}else{
-			$record = $this->database->fetch_array($query);
+			$record = $this->database->fetch_row($query);
 			if ($record['u2fdata'] != NULL) {
 				$u2fdata = json_decode($record['u2fdata']);
 				$data = $u2f->doAuthenticate($authReq, $u2fdata, json_decode($response));

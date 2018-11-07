@@ -96,7 +96,7 @@ class PDO_DB {
 		return $this->master->errorCode();
 	}
 	
-	function fetch_array($query)
+	function fetch_row($query)
 	{
 		return $query->fetch(PDO::FETCH_ASSOC);
 	}

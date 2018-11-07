@@ -54,7 +54,7 @@ class manager
 		}else
 		{
 			
-			$userdata = $this->database->fetch_array($query);
+			$userdata = $this->database->fetch_row($query);
 			$u2fdata = array();
 			if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
 
@@ -217,7 +217,7 @@ class manager
 			return '';
 		}else
 		{
-			return $this->database->fetch_array($query);
+			return $this->database->fetch_row($query);
 		}
 	}
 
@@ -282,7 +282,7 @@ class manager
 	{
 		$query = "SELECT count(owner) AS current FROM zones WHERE owner = ?";
 		$query	= $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
-		$record = $this->database->fetch_array($query);
+		$record = $this->database->fetch_row($query);
 
 		$user = $this->getUser($userId);
 
@@ -485,7 +485,7 @@ class manager
 			return '';
 		}else
 		{
-			while($record=$this->database->fetch_array($query))
+			while($record=$this->database->fetch_row($query))
 			{
 				$sortkey = implode('.', array_reverse(explode('.', $record['_sort_key'])));
 				$return[$sortkey] = $record;
@@ -525,7 +525,7 @@ class manager
 	{
 		$query 		= "SELECT content FROM records WHERE domain_id=? AND type='SOA'";
 		$query 		= $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
-		$record		= $this->database->fetch_array($query);
+		$record		= $this->database->fetch_row($query);
 		$soa		= explode(" ", $record['content']);
 
 		if(substr($soa[2], 0, 8) != date("Ymd")) // IF THE SOA ISN'T OF TODAY THEN CREATE A NEW SOA

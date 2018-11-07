@@ -12,7 +12,7 @@ abstract class database
 	/**
 	 * fetch one database row at a time, as an associative array
 	 */
-	abstract function fetch_array($query);
+	abstract function fetch_row($query);
 
 	/**
 	 * fetch all result rows at once, as an indexed array of associative arrays

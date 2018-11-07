@@ -9,7 +9,7 @@ WHERE `type` = 'MX'
 GROUP BY name
 ORDER BY prio DESC";
 $query = $config['database']->query_slave($query) or die ($config['database']->error());
-while($record = $config['database']->fetch_array($query))
+while($record = $config['database']->fetch_row($query))
 {
 	try{
 		$manager->addRecord ($record['domain_id'], $record['name'], $record['type'], $fallbackHostname, $record['ttl'], ($record['prio']+10), time());
