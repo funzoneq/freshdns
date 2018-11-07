@@ -243,29 +243,17 @@ class manager
 
 	function updateDomain ($orgDomainId, $domainId, $name, $master, $lastCheck, $type, $notifiedSerial, $account)
 	{
-		if($this->database->updateModel('domains', [ 'id' => $orgDomainId ], [
+		$this->database->updateModel('domains', [ 'id' => $orgDomainId ], [
 			"id" => $domainId, "name" => $name,
 			"master" => $master, "last_check" => $lastCheck,
 			"type" => $type, "notified_serial" => $notifiedSerial,
 			"account" => $account
-		]))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		]);
 	}
 
 	function removeDomain ($domainId)
 	{
-		if($this->database->deleteModel('domains', [ 'id' => $domainId ]))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		$this->database->deleteModel('domains', [ 'id' => $domainId ]);
 	}
 
 	function canAddDomainCheckMax ($userId)
@@ -376,21 +364,14 @@ class manager
 			return false;
 		}
 
-		if($this->database->updateModel('zones', ['domain_id'=>$domainId], ['owner'=>$owner ]))
-		{
-			return true;
-		}else
-		{
-			throw new Exception($this->database->error());
-			return false;
-		}
+		$this->database->updateModel('zones', ['domain_id'=>$domainId], ['owner'=>$owner ]);
 	}
 
 	/* **************************************** */
 
 	function addRecord ($domainId, $name, $type, $content, $ttl, $prio, $changeDate)
 	{
-		if($this->database->createModel('records', [
+		$this->database->createModel('records', [
 			"domain_id" => $domainId,
 			"name" => trim($name),
 			"type" => $type,
@@ -398,38 +379,31 @@ class manager
 			"ttl" => $ttl,
 			"prio" => $prio,
 			"change_date" => $changeDate,
-		]))
-		{
-			// UPDATE THE SOA SERIAL
-			$this->updateSoaSerial($domainId);
+		]);
+		
+		// UPDATE THE SOA SERIAL
+		$this->updateSoaSerial($domainId);
 
-			return mysql_insert_id();
-		}else
-		{
-			throw new Exception($this->database->error());
-		}
+		return mysql_insert_id();
 	}
 
 	function updateRecord ($orgRecordId, $recordId, $domainId, $name, $type, $content, $ttl, $prio, $changeDate, $updateSerial = true)
 	{
-		if($this->database->updateModel('records', [ "id" => $orgRecordId ], [
+		$this->database->updateModel('records', [ "id" => $orgRecordId ], [
 			"id" => $recordId, "domain_id" => $domainId,
 			"name" => $name, "type" => $type,
 			"content" => $content, "ttl" => $ttl,
 			"prio" => $prio, "change_date" => $changeDate
-		]))
+		]);
+		
+		if($updateSerial)
 		{
-			if($updateSerial)
-			{
-				// UPDATE THE SOA SERIAL
-				$this->updateSoaSerial($domainId);
-			}
-
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
+			// UPDATE THE SOA SERIAL
+			$this->updateSoaSerial($domainId);
 		}
+
+		return true;
+		
 	}
 
 	function removeRecord ($recordId, $domainId)
@@ -497,13 +471,8 @@ class manager
 
 		$query .= " records.domain_id=?;";
 
-		if($this->database->query_master($query, [ $domainId ]))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		$this->database->query_master($query, [ $domainId ]);
+		return true;
 	}
 
 	function createNewSoaSerial ()
@@ -536,14 +505,8 @@ class manager
 		if(!$expire) $expire = 3600000;
 		if(!$ttl) $ttl = 172800;
 		
-		if($this->database->updateModel('records', [ 'domain_id' => $domainId, 'type' => 'SOA' ],
-										[ 'content' => "$ns0 $hostmaster $serial $refresh $retry $expire $ttl" ]))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		return $this->database->updateModel('records', [ 'domain_id' => $domainId, 'type' => 'SOA' ],
+										[ 'content' => "$ns0 $hostmaster $serial $refresh $retry $expire $ttl" ]);
 	}
 
 	/* **************************************** */
