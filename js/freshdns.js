@@ -88,7 +88,7 @@ function apiCall(method, functionCall, getParameters, postParameters, callbackFu
 }
 
 function resetActive() {
-		$("li.active").removeClass("active");
+	$("li.active").removeClass("active");
 }
 
 function message(style,text,subtext) {
@@ -106,7 +106,7 @@ function succesFailed (request)
 	if(jsonData.status=="success")
 	{
 		message("success", jsonData.text);
-	}else
+	} else
 	{
 		message("danger", "Failed: "+jsonData.text);
 	}
@@ -116,7 +116,8 @@ function succesFailed (request)
 		window.location.reload();
 	}
 
-	if (jsonData.u2f_challenge) {
+	if (jsonData.u2f_challenge)
+	{
 		doU2fSignature(jsonData.u2f_challenge);
 	}
 }
@@ -139,7 +140,7 @@ function list (letter)
 	apiGet("letterlist", { "letter":letter }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
-		var jsonData = eval('('+request.responseText+')');
+		var jsonData = JSON.parse(request.responseText);
 		var output = '<h3>List</h3><table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
@@ -163,7 +164,7 @@ function liveSearchStart()
 	apiGet("livesearch", { "q":document.getElementById('livesearch').value }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
-		var jsonData = eval('('+request.responseText+')');
+		var jsonData = JSON.parse(request.responseText);
 		var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
@@ -187,7 +188,7 @@ function ownersList (userId)
 	apiGet("ownerslist", { "userId":userId }, function (request) {
 		document.getElementById("body").innerHTML = '';
 		
-		var jsonData = eval('('+request.responseText+')');
+		var jsonData = JSON.parse(request.responseText);
 		var output = '<table class="table table-condensed table-striped">';
 		
 		if(request.responseText.length==2)
@@ -392,40 +393,34 @@ function bulkNewDomain ()
 
 function changeOwnersSelect (request)
 {
-	if (request.readyState==4)
+	var jsonData = JSON.parse(request.responseText);
+	
+	document.getElementById('owner').options.length=0;
+	
+	for(i=0; i<jsonData.length; i++)
 	{
-		var jsonData = eval('('+request.responseText+')');
-		
-		document.getElementById('owner').options.length=0;
-		
-		for(i=0; i<jsonData.length; i++)
+		if(userlevel<5)
 		{
-			if(userlevel<5)
+			if(myUserId==jsonData[i].id)
 			{
-				if(myUserId==jsonData[i].id)
-				{
-					document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, true);
-				}
-			}else
-			{
-				document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, false);
+				document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, true);
 			}
+		}else
+		{
+			document.getElementById('owner').options[i]=new Option(jsonData[i].fullname, jsonData[i].id, false, false);
 		}
 	}
 }
 
 function changeTemplateSelect (request)
 {
-	if (request.readyState==4)
+	var jsonData = JSON.parse(request.responseText);
+	
+	document.getElementById('template').options.length=0;
+	
+	for(i=0; i<jsonData.length; i++)
 	{
-		var jsonData = eval('('+request.responseText+')');
-		
-		document.getElementById('template').options.length=0;
-		
-		for(i=0; i<jsonData.length; i++)
-		{
-			document.getElementById('template').options[i]=new Option(jsonData[i], jsonData[i], false, false);
-		}
+		document.getElementById('template').options[i]=new Option(jsonData[i], jsonData[i], false, false);
 	}
 }
 
