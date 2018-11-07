@@ -157,10 +157,7 @@ Object.extend(String.prototype, {
   },
 
   escapeHTML: function() {
-    var div = document.createElement('div');
-    var text = document.createTextNode(this);
-    div.appendChild(text);
-    return div.innerHTML;
+    return this.replace(/'/g, "&apos;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   },
 
   unescapeHTML: function() {
