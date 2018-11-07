@@ -521,15 +521,9 @@ function deleteUser (userId)
 function editUser (userId)
 {
 	console.log("editUser",userId);
-	apiPost("getUser", { "userId": userId }, showEditUser);
-	updateHash('#user=' + userId);
-}
-
-function showEditUser (request)
-{
-	console.log("showEditUser",request);
-	if (request.readyState==4)
+	apiPost("getUser", { "userId": userId }, function (request)
 	{
+		console.log("showEditUser",request);
 		var jsonData = JSON.parse(request.responseText);
 		console.log(jsonData);
 		editUser_data = jsonData;
@@ -562,8 +556,11 @@ function showEditUser (request)
 		result += '<hr>';
 		
 		document.getElementById("body").innerHTML = result;
-	}
+	});
+	updateHash('#user=' + userId);
 }
+
+
 function addU2fKey() {
 	document.getElementById("u2f-status").innerHTML="Press your U2F key to add it to your account...";
 	var appId = editUser_data.u2f_req.appId;
@@ -610,7 +607,7 @@ function saveUserFromForm() {
 
 function loginForm ()
 {
-	var result  = '<p><form method="post" action=\'javascript:login(document.getElementById("usernamefield").value, document.getElementById("passwordfield").value);\'><table>';
+	var result  = '<p><form method="post" action=\'javascript:login();\'><table>';
 	result += '  <tr>';
 	result += '	<td rowspan="4" width="70"><img src="images/agent.png" alt="Please login" /></td>';
 	result += '	<td colspan="3"><b>Login<span id="infoHead"></span></b></td>';
@@ -635,8 +632,8 @@ function loginForm ()
 function login (username, password)
 {
 	apiPost("doLogin", {
-		"username": username,
-		"password": password
+		"username": document.getElementById("usernamefield").value,
+		"password": document.getElementById("passwordfield").value
 	});
 }
 

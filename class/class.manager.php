@@ -388,7 +388,7 @@ class manager
 			"name" => $name, "type" => $type,
 			"content" => $content, "ttl" => $ttl,
 			"prio" => $prio, "change_date" => $changeDate
-		]);
+		], FALSE);  //don't show error if no change was made
 		
 		if($updateSerial)
 		{
