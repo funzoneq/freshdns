@@ -22,6 +22,15 @@ try {
 	exit;
 }
 
+if (count($_POST)) {
+	try {
+		$login->xsrfCheck();
+	} catch(Exception $ex) {
+		$json->print_exception($ex);
+		exit;
+	}
+}
+
 if(!$login->isLoggedIn())
 // THE USER IS NOT LOGGED IN
 {

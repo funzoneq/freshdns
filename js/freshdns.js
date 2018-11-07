@@ -36,6 +36,7 @@ function updateHash(hash) {
 }
 
 function apiPost(functionCall, postParameters, callbackFunction) {
+	postParameters['xsrf_token'] = window.xsrf_token;
 	new Ajax.Request(baseurl+"?p="+encodeURIComponent(functionCall),
 		{
 			method:"post",

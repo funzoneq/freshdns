@@ -13,6 +13,7 @@
 	<?php
 	echo "var userlevel='".$_SESSION['level']."';\n";
 	echo "var myUserId='".$_SESSION['userId']."';\n";
+	echo "var xsrf_token='".$_SESSION['token']."';\n";
 	?>
 	</script>
 	<link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">

@@ -2,12 +2,27 @@
 class login
 {
 	private $database;
-	
+	public $token;
+
 	function __construct ($database)
 	{
 		if (session_id() == "") session_start();
-		
+		if (empty($_SESSION['token'])) {
+			if (function_exists('mcrypt_create_iv')) {
+				$_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+			} else {
+				$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+			}
+		}
+
 		$this->database = $database;
+	}
+
+	function xsrfCheck() {
+		if ($_POST['xsrf_token'] !== $_SESSION['token']) {
+			http_response_code(403);
+			throw new Exception("XSRF Token missing or mismatch");
+		}
 	}
 	
 	function isLoggedIn ()
