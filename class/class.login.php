@@ -8,14 +8,18 @@ class login
 	{
 		if (session_id() == "") session_start();
 		if (empty($_SESSION['token'])) {
-			if (function_exists('mcrypt_create_iv')) {
-				$_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
-			} else {
-				$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
-			}
+			$this->generateXsrfToken();
 		}
 
 		$this->database = $database;
+	}
+
+	function generateXsrfToken() {
+		if (function_exists('mcrypt_create_iv')) {
+			$_SESSION['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		} else {
+			$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+		}
 	}
 
 	function xsrfCheck() {
@@ -73,7 +77,8 @@ class login
 				}
 			}
 			$_SESSION['loggedIn'] = true;
-			
+			$this->generateXsrfToken();
+
 			return array("status" => "success", "text" => "Welcome, you have been logged in.", "reload" => "yes");
 		}
 	}
@@ -100,6 +105,7 @@ class login
 											[ 'u2fdata' => json_encode($u2fdata) ]);
 
 				$_SESSION['loggedIn'] = true;
+				$this->generateXsrfToken();
 				return TRUE;
 			}
 		}
