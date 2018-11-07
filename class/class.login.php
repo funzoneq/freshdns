@@ -57,7 +57,7 @@ class login
 		
 		if($this->database->num_rows($query)!=1)
 		{
-			throw new Exception ("NoUserFound");
+			throw new Exception ("User not found or inactive or password invalid");
 		}else
 		{
 			$record = $this->database->fetch_row($query);

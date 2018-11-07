@@ -58,7 +58,6 @@ function apiCall(method, functionCall, getParameters, postParameters, callbackFu
 	xhr.onreadystatechange = function() {
 		try {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
-				console.log(xhr);
 				if (xhr.status === 200) {
 					try {
 						callbackFunction(xhr);
@@ -68,7 +67,7 @@ function apiCall(method, functionCall, getParameters, postParameters, callbackFu
 					}
 				} else if (xhr.getResponseHeader("Content-Type") == "application/json") {
 					var jsonData = JSON.parse(xhr.responseText);
-					message("danger", "Failed: "+jsonData.text);
+					message("danger", xhr.statusText, jsonData.text);
 				} else if (xhr.getResponseHeader("Content-Type") == "application/json") {
 					message('danger', 'Error ' + xhr.status + ' -- ' + xhr.statusText + ' -- ' + xhr.responseText);
 				}
