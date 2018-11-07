@@ -26,6 +26,8 @@ function onNavigateHash(hash) {
 	switch(parts[0]) {
 		case '#domain': editDomain(parseInt(parts[1])); break;
 		case '#list': list(parts[1]); break;
+		case '#admin': userAdmin(); break;
+		case '#user': editUser(parts[1]); break;
 	}
 }
 function updateHash(hash) {
@@ -552,6 +554,7 @@ function userAdmin ()
 		onSuccess:showUserAdmin,
 		onFailure:resultError
 	});
+	updateHash('#admin=user');
 }
 
 function showUserAdmin (request)
@@ -634,6 +637,7 @@ function editUser (userId)
 		onSuccess:showEditUser,
 		onFailure:resultError
 	});
+	updateHash('#user=' + userId);
 }
 
 function showEditUser (request)
@@ -644,10 +648,10 @@ function showEditUser (request)
 		var jsonData = JSON.parse(request.responseText);
 		console.log(jsonData);
 		editUser_data = jsonData;
-		try{editUser_u2ftokens=JSON.parse(jsonData.u2fdata);}catch(ex){}
+		try{editUser_u2ftokens=JSON.parse(jsonData.u2fdata);}catch(ex){editUser_u2ftokens=[];}
 		if(!editUser_u2ftokens || !editUser_u2ftokens.length) editUser_u2ftokens=[];
 
-		var result = '<table width="800"><input type="hidden" id="userId" value="'+jsonData.id+'">';
+		var result = '<h3>Edit user :: <b>'+jsonData.username+'</b></h3><table width="800"><input type="hidden" id="userId" value="'+jsonData.id+'">';
 		result += '<tr><td>Username</td><td><input type="text" id="username" value="'+jsonData.username+'"></td></tr>';
 		result += '<tr><td>Password</td><td><input type="password" id="password" value=""></td></tr>';
 		result += '<tr><td>Full name</td><td><input type="text" id="fullname" value="'+jsonData.fullname+'"></td></tr>';
