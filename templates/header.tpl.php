@@ -32,7 +32,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="<?= dirname($_SERVER["PHP_SELF"]) ?>"><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
+      <a class="navbar-brand" href="."><img id="logo" src="./images/logo.png" alt="FreshDNS" /> FreshDNS</a>
     </div>
 
 
