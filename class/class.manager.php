@@ -23,6 +23,10 @@ class manager
 			throw new Exception("No rights");
 			return false;
 		}
+		if (!$username) throw new Exception("username is required");
+		if (strlen($password) < 8) throw new Exception("password is required to be minimum 8 characters");
+		if ($active != 0 && $active != 1) throw new Exception("active must be 0 or 1");
+		if ($level < 1 || $level > 10) throw new Exception("level must be between 1 and 10");
 
 		return $this->database->createModel('users', [
 			'username' => $username,
