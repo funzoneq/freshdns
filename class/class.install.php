@@ -66,7 +66,7 @@ class install
 		$query[] = "CREATE TABLE IF NOT EXISTS `users` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `username` varchar(16) NOT NULL default '',
-		  `password` varchar(34) NOT NULL default '',
+		  `password` TEXT NOT NULL,
 		  `fullname` varchar(255) NOT NULL default '',
 		  `email` varchar(255) NOT NULL default '',
 		  `description` text NOT NULL,
@@ -130,4 +130,3 @@ class install
 		}
 	}
 }
-?>

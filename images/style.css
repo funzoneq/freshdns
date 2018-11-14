@@ -6,17 +6,18 @@ body {
 }
 
 #header {
-	height: 75px;
-	background: #cad3ed;
-	padding: 5px;
-	margin: 0px;
+	
+	_background: #cad3ed;
+	
 }
 
+#message { position: fixed; top: 60px; right: 20px; width: 200px; }
+
 #logo {
-	display: inline;
-	margin: 5px;
-	width: 75px;
-	height: 75px;
+        margin: -5px 10px 0 0;
+	float: left;
+	width: 35px;
+	height: 35px;
 }
 
 #headingtext {
@@ -30,39 +31,19 @@ body {
 	font-weight: bold;
 }
 
-#navbar {
-	background: #cad3ed;
-	padding: 8px;
-	margin: 20px 0px 20px 0px;
-	height: 20px;
+.navbar {
+    margin-bottom: 5px;
 }
 
-#letters {
-	width: 820px;
-	color: #4169e1;
-	font-size: 17px;
-	font-weight: bold;
-	float:left;
-}
-
-#letters a {
-	text-decoration: underline;
-	color: #4169e1;
-}
-
-#letters a:hover {
-	text-decoration: none;
-	color: #4169e1;
-}
 
 #search {
-	float:right;
-	width: 180px;
+	_float:right;
+	_width: 180px;
 }
 
 #body {
 	color: #353535;
-	padding: 10px;
+	_padding: 10px;
 }
 
 #login {
@@ -244,11 +225,11 @@ ul {
 }
 
 #livesearch {
-margin: 0px 25px 15px 25px;
-padding:0px;
-width: 140px;
-display: block;
-border:1px solid #99b58d;
+_margin: 0px 25px 15px 25px;
+_padding:0px;
+_width: 140px;
+_display: block;
+_border:1px solid #99b58d;
 }
 
 
@@ -315,3 +296,20 @@ ul#LSShadow {
 td {
 	vertical-align: top;
 }
+
+#recordsTable tr td input[type=text] {
+    background: #eee; border: 1px solid #ccc;
+}
+#recordsTable input.type {
+    font-family: monospace;
+}
+#recordsTable input.num {
+    font-family: monospace; text-align: right;
+}
+#recordsTable tr:hover td input[type=text] {
+    background: #fff;
+}
+h3 {
+    background: #ddd; font-size: 12pt; padding: 10px;
+}
+.pagination { margin-bottom: 0; }

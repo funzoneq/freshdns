@@ -1,6 +1,6 @@
 <?php
 abstract class database
-{	
+{
 	abstract function initiate ();
 	
 	abstract function query_slave($query);
@@ -9,7 +9,15 @@ abstract class database
 	
 	abstract function error ();
 	
-	abstract function fetch_array($query);
+	/**
+	 * fetch one database row at a time, as an associative array
+	 */
+	abstract function fetch_row($query);
+
+	/**
+	 * fetch all result rows at once, as an indexed array of associative arrays
+	 */
+	abstract function fetch_all($query);
 	
 	abstract function num_rows ($query);
 	
@@ -29,4 +37,3 @@ abstract class database
 	
 	abstract function setVars ($username, $password, $database, $master, $slave = array(), $replication='');
 }
-?>

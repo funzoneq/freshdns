@@ -4,10 +4,14 @@ header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 include_once('./config.inc.php');
+include_once('./class/class.U2F.php');
 
 $login = new login($config['database']);
 $json = new Services_JSON();
 $manager = new manager($config['database']);
+
+$scheme = isset($_SERVER['HTTPS']) ? "https://" : "http://";
+$u2f = new u2flib_server\U2F($scheme . $_SERVER['HTTP_HOST']);
 
 try {
 	$login->isLoggedIn();
@@ -16,6 +20,14 @@ try {
 	$login->logout();
 	header("Location: index.php");
 	exit;
+}
+
+if (count($_POST)) {
+	try {
+		$login->xsrfCheck();
+	} catch(Exception $ex) {
+		$json->exception(403, $ex);
+	}
 }
 
 if(!$login->isLoggedIn())
@@ -39,6 +51,7 @@ if(!$login->isLoggedIn())
 			<div class="leeg">&nbsp;</div>
 			<div id="login"></div></div>';
 
+			echo "<script src='./js/u2f-api.js'></script>";
 			echo '<script type="text/javascript" language="JavaScript1.2">loginForm();</script>';
 
 			include('./templates/footer.tpl.php');
@@ -47,20 +60,26 @@ if(!$login->isLoggedIn())
 		case "doLogin":
 			try
 			{
-				$login->login($_POST['username'], $_POST['password']);
-
-				$return = array("status" => "success", "text" => "Welcome, you have been logged in.", "reload" => "yes");
-				echo $json->encode($return);
+				$return = $login->login($_POST['username'], $_POST['password']);
+				$json->print_json($return);
 			}catch(Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(403, $ex);
 			}
 			break;
 
-		case "phpinfo":
-			phpinfo();
+		case "checkU2f":
+			try {
+				$login->checkU2fSignature($_POST['username'], $_POST['auth']);
+				$return = array("status" => "success", "text" => "Welcome, you have been logged in.", "reload" => "yes");
+				$json->print_json($return);
+			}catch(Exception $ex)
+			{
+				$json->exception(403, $ex);
+			}
 			break;
+
+
 	}
 }else
 {
@@ -70,71 +89,65 @@ if(!$login->isLoggedIn())
 		case "frontpage":
 			include('./templates/header.tpl.php');
 
-			//echo '<div id="list"></div>';
-
 			if(!isset($_GET['q']))
 			{
-				echo '<script type="text/javascript" language="JavaScript1.2">list(\'A\');</script>';
+				//echo '<script type="text/javascript" language="JavaScript1.2">list(\'\');</script>';
+				echo '<script> ownersList(myUserId) </script>';
 			}else
 			{
 				echo '<script type="text/javascript" language="JavaScript1.2">liveSearchStart();</script>';
 			}
 
+			echo "<script src='./js/u2f-api.js'></script>";
 			include('./templates/footer.tpl.php');
 			break;
 
 		case "livesearch":
 			$records = $manager->searchDomains($_GET['q']);
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "letterlist":
 			$records = $manager->getListByLetter(strtolower($_GET['letter']));
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "ownerslist":
 			$records = $manager->getListByOwner($_GET['userId']);
-			echo $json->encode($records);
+			$json->print_json($records);
 			break;
 
 		case "deleteZone":
-			if(!$_GET['domainId'])
+			if(!$_POST['domainId'])
+				$json->failure(400, "There was no domainId received");
+			try
 			{
-				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				echo $json->encode($return);
-			}else
-			{
-				try
-				{
-					$manager->removeAllRecords($_GET['domainId']);
-					$manager->removeZoneByDomainId($_GET['domainId']);
-					$manager->removeDomain($_GET['domainId']);
+				$manager->removeAllRecords($_POST['domainId']);
+				$manager->removeZoneByDomainId($_POST['domainId']);
+				$manager->removeDomain($_POST['domainId']);
 
-					$return = array("status" => "success", "text" => "The zone has been deleted.");
-					echo $json->encode($return);
-				}catch(Exception $ex)
-				{
-					$return = array("status" => "failed", "text" => $ex->getMessage());
-					echo $json->encode($return);
-				}
+				$return = array("status" => "success", "text" => "The zone has been deleted.");
+				$json->print_json($return);
+			}catch(Exception $ex)
+			{
+				$json->exception(500, $ex);
 			}
+
 			break;
 
 		case "getDomainInfo":
 			if(!$_GET['domainId'])
-			{
-				$return = array("status" => "failed", "text" => "There was no domainId recieved");
-				echo $json->encode($return);
-				exit;
-			}
+				$json->failure(400, "There was no domainId received");
 
 			$domain = $manager->getDomain($_GET['domainId']);
+			if (!$domain) {
+				$json->failure(404, "Domain not found");
+			}
 			$records = $manager->getAllRecords($_GET['domainId']);
 
 			$return = array('domain' => $domain, 'records' => $records);
 
-			echo $json->encode($return);
+			$json->print_json($return);
 
 			unset($domain, $records);
 			break;
@@ -143,13 +156,14 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$manager->updateRecord($_POST['recordId'], $_POST['recordId'], $_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], time());
-
+				
+				touch("/opt/powerdns_copy/last_change");
+				
 				$return = array("status" => "success", "text" => "The record has been updated.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -163,26 +177,27 @@ if(!$login->isLoggedIn())
 
 				$manager->updateSoaSerial($_POST['domainId']);
 
+				touch("/opt/powerdns_copy/last_change");
+
 				$return = array("status" => "success", "text" => "All records have been updated.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
 		case "removeRecord":
 			try
 			{
-				$manager->removeRecord($_GET['recordId'], $_GET['domainId']);
+				$manager->removeRecord($_POST['recordId'], $_POST['domainId']);
+				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been deleted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -190,13 +205,13 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$manager->addRecord ($_POST['domainId'], $_POST['name'], $_POST['type'], $_POST['content'], $_POST['ttl'], $_POST['prio'], $_POST['changeDate']);
+				touch("/opt/powerdns_copy/last_change");
 
 				$return = array("status" => "success", "text" => "The record has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -206,11 +221,10 @@ if(!$login->isLoggedIn())
 				$manager->transferDomain($_POST['domainId'], $_POST['owner']);
 
 				$return = array("status" => "success", "text" => "The domain has been transfered.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -218,11 +232,10 @@ if(!$login->isLoggedIn())
 			try
 			{
 				$return = $manager->getAllOwners();
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -234,12 +247,13 @@ if(!$login->isLoggedIn())
 				$return[] = $name;
 			}
 
-			echo $json->encode($return);
+			$json->print_json($return);
 			break;
 
 		case "newDomain":
 			try
 			{
+				$manager->database->beginTransaction();
 				$domainId = $manager->addDomain(trim($_POST['domain']), $_POST['master'], $_POST['lastCheck'], $_POST['type'], $_POST['notifiedSerial'], $_POST['account']);
 				$manager->addZone($domainId, $_POST['owner'], "");
 
@@ -259,14 +273,15 @@ if(!$login->isLoggedIn())
 				}
 
 				// IT'S A NEW DOMAIN, RESET THE SOA TO 00
-				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial());
+				$manager->setSoaSerial ($domainId, $config['DNS']['ns0'], $config['DNS']['hostmaster'], $manager->createNewSoaSerial(), 3600, 1800, 3600000, 172800);
 
+				$manager->database->commit();
 				$return = array("status" => "success", "text" => "The domain has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$manager->database->rollBack();
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -306,7 +321,7 @@ if(!$login->isLoggedIn())
 			}
 
 			$return = array("status" => "success", "text" => implode("\n", $succes)."\n".implode("\n", $failed));
-			echo $json->encode($return);
+			$json->print_json($return);
 			break;
 
 		case "deleteUser":
@@ -316,29 +331,27 @@ if(!$login->isLoggedIn())
 				$manager->removeUser($_POST['userId']);
 
 				$return = array("status" => "success", "text" => "All user data has been deleted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
 		case "getUser":
-			echo $json->encode($manager->getUser($_POST['userId']));
+			$json->print_json($manager->getUser($_POST['userId']));
 			break;
 
 		case "editUser":
 			try
 			{
-				$manager->updateUser($_POST['userId'], $_POST['userId'], $_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains']);
+				$manager->updateUser($_POST['userId'], $_POST['userId'], $_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains'], $_POST['u2fdata']);
 
 				$return = array("status" => "success", "text" => "The user has been editted.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
 			break;
 
@@ -348,16 +361,11 @@ if(!$login->isLoggedIn())
 				$manager->addUser($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], $_POST['level'], $_POST['active'], $_POST['maxdomains']);
 
 				$return = array("status" => "success", "text" => "The user has been added.");
-				echo $json->encode($return);
+				$json->print_json($return);
 			}catch (Exception $ex)
 			{
-				$return = array("status" => "failed", "text" => $ex->getMessage());
-				echo $json->encode($return);
+				$json->exception(500, $ex);
 			}
-			break;
-
-		case "phpinfo":
-			phpinfo();
 			break;
 
 		case "logout":
@@ -368,4 +376,3 @@ if(!$login->isLoggedIn())
 }
 
 unset($json, $manager);
-?>

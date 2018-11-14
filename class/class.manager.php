@@ -1,7 +1,7 @@
 <?php
 class manager
 {
-	private $database;
+	public $database;
 
 	/* **************************************** */
 
@@ -24,12 +24,16 @@ class manager
 			return false;
 		}
 
-		$query = "INSERT INTO `users` ( `id` , `username` , `password` , `fullname` , `email` , `description` , `level` , `active` , `maxdomains`) VALUES
-		('', '".$this->database->escape_string($username)."', '".$this->database->escape_string($password)."', '".$this->database->escape_string($fullname)."',
-		'".$this->database->escape_string($email)."', '".$this->database->escape_string($description)."', '".$this->database->escape_string($level)."',
-		'".$this->database->escape_string($active)."', '".$this->database->escape_string($maxdomains)."');";
-
-		if($this->database->query_master($query))
+		if($this->database->createModel('users', [
+			'username' => $username,
+			'password' => password_hash($password, PASSWORD_DEFAULT),
+			'fullname' => $fullname, 
+			'email' => $email, 
+			'description' => $description, 
+			'level' => $level, 
+			'active' => $active, 
+			'maxdomains' => $maxdomains
+		]))
 		{
 			return mysql_insert_id();
 		}else
@@ -40,41 +44,56 @@ class manager
 
 	function getUser ($userId)
 	{
-		$query = "SELECT * FROM users WHERE id = '".$this->database->escape_string($userId)."'";
-		$query = $this->database->query_slave($query) or die ($this->database->error());
+		global $u2f;
+		$query = "SELECT * FROM users WHERE id = ?";
+		$query = $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
 
 		if($this->database->num_rows($query)==0)
 		{
 			return '';
 		}else
 		{
-			return $this->database->fetch_array($query);
+			
+			$userdata = $this->database->fetch_row($query);
+			$u2fdata = array();
+			if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
+			if (!is_array($u2fdata)) $u2fdata = array();
+			
+			list($req,$sigs) = $u2f->getRegisterData($u2fdata);
+			$_SESSION['regReq'] = json_encode($req);
+			$userdata['u2f_req'] = $req;
+			$userdata['u2f_sigs'] = $sigs;
+			
+			return $userdata;
 		}
 	}
 
-	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains)
+	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains, $u2fdata)
 	{
-		$query = "UPDATE `users`
-		SET `username`='".$this->database->escape_string($username)."',
-		`fullname`='".$this->database->escape_string($fullname)."', `email`='".$this->database->escape_string($email)."',
-		`description`='".$this->database->escape_string($description)."',";
-
+		global $u2f;
+		$u2fdata = json_decode($u2fdata);
+		foreach($u2fdata as &$d) {
+			if (!$d->keyHandle) {
+				$d = $u2f->doRegister(json_decode($_SESSION['regReq']), $d);
+			}
+		}
+		$u2fdata = json_encode($u2fdata);
+		
+		$updateSet = [ 'id' => $userId, 'username' => $username, 'fullname' => $fullname, 'email' => $email, 'description' => $description, 'u2fdata' => $u2fdata ];
 		if($_SESSION['level']>5)
 		{
-			$query .= " `level`='".$this->database->escape_string($level)."', `active`='".$this->database->escape_string($active)."', `maxdomains`='".$this->database->escape_string($maxdomains)."',";
+			$updateSet += ['level' => $level, 'active' => $active, 'maxdomains' => $maxdomains];
 		}
 
 		if($password!="")
 		{
-			$query .= " `password`='".$this->database->escape_string(md5($password))."',";
+			$updateSet['password'] = password_hash($password, PASSWORD_DEFAULT);
 		}
 
-		$query .= " `id`='".$this->database->escape_string($userId)."'
-		WHERE `id`='".$this->database->escape_string($orgUserId)."' LIMIT 1;";
-
+		
 		if($_SESSION['level']<5 && $_SESSION['userId']!=$orgUserId || $_SESSION['level']>=5)
 		{
-			if($this->database->query_master($query))
+			if($this->database->updateModel('users', [ 'id' => $orgUserId ], $updateSet))
 			{
 				return true;
 			}else
@@ -88,9 +107,7 @@ class manager
 	{
 		if($_SESSION['level']>=5)
 		{
-			$query = "DELETE FROM `users` WHERE `id`='".$this->database->escape_string($userId)."' LIMIT 1;";
-
-			if($this->database->query_master($query))
+			if($this->database->deleteModel('users', [ 'id'=>$userId ]))
 			{
 				return true;
 			}else
@@ -108,9 +125,9 @@ class manager
 			$query = "DELETE FROM zones z, domains d, records r USING zones z, domains d, records r
 			WHERE z.domain_id = d.id AND
 			z.domain_id = r.domain_id AND
-			z.owner = '".$this->database->escape_string($userId)."';";
+			z.owner = ?;";
 
-			if($this->database->query_master($query))
+			if($this->database->query_master($query, [ $userId ]))
 			{
 				return true;
 			}else
@@ -122,17 +139,13 @@ class manager
 
 	/* **************************************** */
 
-	function addZone ($domainId, $userId, $comment)
+	function addZone ($domainId, $ownerUserId, $comment)
 	{
-		if($_SESSION['level']<5)
-		{
-			$userId = $_SESSION['userId'];
-		}
-
-		$query = "INSERT INTO `zones` ( `id` , `domain_id` , `owner` , `comment` )
-		VALUES ( NULL , '".$this->database->escape_string($domainId)."', '".$this->database->escape_string($userId)."', '".$this->database->escape_string($comment)."' );";
-
-		if($this->database->query_master($query))
+		if($this->database->createModel('zones', [
+			'domain_id' => $domainId,
+			'owner' => $ownerUserId,
+			'comment' => $comment
+		]))
 		{
 			return mysql_insert_id();
 		}else
@@ -141,18 +154,15 @@ class manager
 		}
 	}
 
-	function editZone ($domainId, $userId)
+	function editZone ($domainId, $newOwnerUserId)
 	{
-		$query = "UPDATE `zones` SET owner='".$this->database->escape_string($userId)."'  WHERE `domain_id` = '".$this->database->escape_string($domainId)."'";
-
+		$idVals = ['domain_id' => $domainId];
 		if($_SESSION['level']<5)
 		{
-			$query .= " AND owner = '".$this->database->escape_string($_SESSION['userId'])."'";
+			$idVals['owner'] = $_SESSION['userId'];
 		}
 
-		$query .= " LIMIT 1;";
-
-		if($this->database->query_master($query))
+		if($this->database->updateModel('zones', $idVals, [ 'owner' => $newOwnerUserId ]))
 		{
 			return true;
 		}else
@@ -163,16 +173,13 @@ class manager
 
 	function removeZone ($zoneId)
 	{
-		$query = "DELETE FROM `zones` WHERE `id` = '".$this->database->escape_string($zoneId)."'";
-
+		$idVals = ['id' => $zoneId];
 		if($_SESSION['level']<5)
 		{
-			$query .= " AND owner = '".$this->database->escape_string($_SESSION['userId'])."'";
+			$idVals['owner'] = $_SESSION['userId'];
 		}
 
-		$query .= " LIMIT 1;";
-
-		if($this->database->query_master($query))
+		if($this->database->deleteModel('zones', $idVals))
 		{
 			return true;
 		}else
@@ -183,14 +190,13 @@ class manager
 
 	function removeZoneByDomainId ($domainId)
 	{
-		$query = "DELETE FROM `zones` WHERE `domain_id` = '".$this->database->escape_string($domainId)."'";
-
+		$idVals = ['domain_id' => $domainId];
 		if($_SESSION['level']<5)
 		{
-			$query .= " AND owner = '".$this->database->escape_string($_SESSION['userId'])."'";
+			$idVals['owner'] = $_SESSION['userId'];
 		}
 
-		if($this->database->query_master($query))
+		if($this->database->deleteModel('zones', $idVals, FALSE))
 		{
 			return true;
 		}else
@@ -203,17 +209,11 @@ class manager
 
 	function getDomain ($domainId)
 	{
-		$query = "SELECT * FROM domains WHERE id='".$this->database->escape_string($domainId)."'";
+		$query = "SELECT * FROM domains WHERE id=?";
 
-		$query = $this->database->query_slave($query) or die ($this->database->error());
+		$query = $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			return $this->database->fetch_array($query);
-		}
+		return $this->database->fetch_row($query);
 	}
 
 	function addDomain ($name, $master, $lastCheck, $type, $notifiedSerial, $account)
@@ -223,61 +223,39 @@ class manager
 			if(!$this->canAddDomainCheckMax($_SESSION['userId']))
 			{
 				throw new Exception("Max domain setting reached. Please ask your host to update your max domains setting.");
-				$error = 1;
 			}
 		}
 
-		if($error != 1)
-		{
-			$query = "INSERT INTO `domains` ( `id` , `name` , `master` , `last_check` , `type` , `notified_serial` , `account` ) VALUES
-			('', '".$this->database->escape_string(trim($name))."', '".$this->database->escape_string($master)."' , '".$this->database->escape_string($lastCheck)."' ,
-			'".$this->database->escape_string($type)."', '".$this->database->escape_string($notifiedSerial)."' , '".$this->database->escape_string($account)."');";
-
-			if($this->database->query_master($query))
-			{
-				return mysql_insert_id();
-			}else
-			{
-				throw new Exception($this->database->error());
-			}
-		}
+		return $this->database->createModel('domains', [
+			"name" => trim($name),
+			"master" => $master,
+			"last_check" => $lastCheck,
+			"type" => $type,
+			"notified_serial" => $notifiedSerial,
+			"account" => $account
+		]);
 	}
 
 	function updateDomain ($orgDomainId, $domainId, $name, $master, $lastCheck, $type, $notifiedSerial, $account)
 	{
-		$query = "UPDATE `domains` SET `id` = '".$this->database->escape_string($domainId)."', `name` = '".$this->database->escape_string($name)."',
-		`master` = '".$this->database->escape_string($master)."', `last_check` = '".$this->database->escape_string($lastCheck)."',
-		`type` = '".$this->database->escape_string($type)."', `notified_serial` = '".$this->database->escape_string($notifiedSerial)."',
-		`account` = '".$this->database->escape_string($account)."'
-		WHERE `id` = '".$this->database->escape_string($orgDomainId)."' LIMIT 1;";
-
-		if($this->database->query_master($query))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		$this->database->updateModel('domains', [ 'id' => $orgDomainId ], [
+			"id" => $domainId, "name" => $name,
+			"master" => $master, "last_check" => $lastCheck,
+			"type" => $type, "notified_serial" => $notifiedSerial,
+			"account" => $account
+		]);
 	}
 
 	function removeDomain ($domainId)
 	{
-		$query = "DELETE FROM `domains` WHERE `id`='".$this->database->escape_string($domainId)."' LIMIT 1;";
-
-		if($this->database->query_master($query))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		$this->database->deleteModel('domains', [ 'id' => $domainId ]);
 	}
 
 	function canAddDomainCheckMax ($userId)
 	{
-		$query = "SELECT count(owner) AS current FROM zones WHERE owner = ".$this->database->escape_string($userId);
-		$query	= $this->database->query_slave($query) or die ($this->database->error());
-		$record = $this->database->fetch_array($query);
+		$query = "SELECT count(owner) AS current FROM zones WHERE owner = ?";
+		$query	= $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
+		$record = $this->database->fetch_row($query);
 
 		$user = $this->getUser($userId);
 
@@ -291,12 +269,8 @@ class manager
 
 	function searchDomains ($q)
 	{
-		if(strlen($q)<2) // SEARCHES SMALLER THAN 2 ARE USELESS AND TAKE UP CPU :@
-		{
-			return '';
-		}
-
 		$return = array();
+		$queryArgs = [];
 		$query	= "SELECT d.id, d.name, count(r.id) AS records, fullname, u.id AS userId
 		FROM domains d, records r, zones z, users u
 		WHERE d.id=r.domain_id AND
@@ -305,58 +279,40 @@ class manager
 
 		if($_SESSION['level']==1)
 		{
-			$query .= " z.owner = '".$_SESSION['userId']."' AND";
+			$query .= " z.owner = ? AND";
+			$queryArgs []= $_SESSION['userId'];
 		}
 
-		$query .= " d.name LIKE '%".addslashes($q)."%'
+		$query .= " d.name LIKE ?
 		GROUP BY r.domain_id
 		ORDER BY name";
-		$query	= $this->database->query_slave($query) or die ($this->database->error());
+		$queryArgs []= "%$q%";
+		$query	= $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
-		}
+		return $this->database->fetch_all($query);
 	}
 
 	function getListByLetter ($letter)
 	{
-		$query = "SELECT d.id, d.name, d.name REGEXP '^".$letter."' AS regex, count(r.id) AS records, fullname, u.id AS userId
+		$queryArgs = [ "^$letter" ];
+		$query = "SELECT d.id, d.name, d.name REGEXP ? AS regex, count(r.id) AS records, fullname, u.id AS userId
 		FROM domains d, records r, zones z, users u
 		WHERE d.id=r.domain_id AND
 		d.id = z.domain_id AND";
 
 		if($_SESSION['level']==1)
 		{
-			$query .= " z.owner = '".$_SESSION['userId']."' AND";
+			$query .= " z.owner = ? AND";
+			$queryArgs []= $_SESSION['userId'];
 		}
 
 		$query .= " z.owner = u.id
 		GROUP BY r.domain_id
 		HAVING regex = 1
 		ORDER BY name;";
-		$query = $this->database->query_slave($query) or die ($this->database->error());
+		$query = $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
-		}
+		return $this->database->fetch_all($query);
 	}
 
 	function getListByOwner ($userId)
@@ -368,24 +324,15 @@ class manager
 			WHERE d.id=r.domain_id AND
 			d.id = z.domain_id AND
 			z.owner = u.id AND
-			z.owner = '".$userId."'
+			z.owner = ?
 			GROUP BY r.domain_id
 			ORDER BY name;";
 
-			$query = $this->database->query_slave($query) or die ($this->database->error());
+			$query = $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
 
-			if($this->database->num_rows($query)==0)
-			{
-				return '';
-			}else
-			{
-				while($record=$this->database->fetch_array($query))
-				{
-					$return[] = $record;
-				}
-
-				return $return;
-			}
+			return $this->database->fetch_all($query);
+		} else {
+			return $this->searchDomains('');
 		}
 	}
 
@@ -400,12 +347,7 @@ class manager
 			throw new Exception("No records found");
 		}else
 		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-
-			return $return;
+			return $this->database->fetch_all($query);
 		}
 	}
 
@@ -417,74 +359,61 @@ class manager
 			return false;
 		}
 
-		$query = "UPDATE zones SET owner='".$this->database->escape_string($owner)."' WHERE domain_id='".$this->database->escape_string($domainId)."'";
-
-		if($this->database->query_master($query))
-		{
-			return true;
-		}else
-		{
-			throw new Exception($this->database->error());
-			return false;
-		}
+		$this->database->updateModel('zones', ['domain_id'=>$domainId], ['owner'=>$owner ]);
 	}
 
 	/* **************************************** */
 
 	function addRecord ($domainId, $name, $type, $content, $ttl, $prio, $changeDate)
 	{
-		$query = "INSERT INTO `records` ( `id` , `domain_id` , `name` , `type` , `content` , `ttl` , `prio` , `change_date` ) VALUES
-		( '', '".$this->database->escape_string($domainId)."', '".$this->database->escape_string(trim($name))."', '".$this->database->escape_string($type)."',
-		'".$this->database->escape_string($content)."', '".$this->database->escape_string($ttl)."', '".$this->database->escape_string($prio)."', '".$this->database->escape_string($changeDate)."');";
+		$this->database->createModel('records', [
+			"domain_id" => $domainId,
+			"name" => trim($name),
+			"type" => $type,
+			"content" => $content,
+			"ttl" => $ttl,
+			"prio" => $prio,
+			"change_date" => $changeDate,
+		]);
+		
+		// UPDATE THE SOA SERIAL
+		$this->updateSoaSerial($domainId);
 
-		if($this->database->query_master($query))
-		{
-			// UPDATE THE SOA SERIAL
-			$this->updateSoaSerial($domainId);
-
-			return mysql_insert_id();
-		}else
-		{
-			throw new Exception($this->database->error());
-		}
+		return mysql_insert_id();
 	}
 
 	function updateRecord ($orgRecordId, $recordId, $domainId, $name, $type, $content, $ttl, $prio, $changeDate, $updateSerial = true)
 	{
-		$query = "UPDATE `records` SET
-		`id` = '".$this->database->escape_string($recordId)."', `domain_id` = '".$this->database->escape_string($domainId)."',
-		`name` = '".$this->database->escape_string($name)."', `type` = '".$this->database->escape_string($type)."',
-		`content` = '".$this->database->escape_string($content)."', `ttl` = '".$this->database->escape_string($ttl)."',
-		`prio` = '".$this->database->escape_string($prio)."', `change_date` = '".$this->database->escape_string($changeDate)."'
-		WHERE `id` = '".$this->database->escape_string($orgRecordId)."' LIMIT 1;";
-
-		if($this->database->query_master($query))
+		$this->database->updateModel('records', [ "id" => $orgRecordId ], [
+			"id" => $recordId, "domain_id" => $domainId,
+			"name" => $name, "type" => $type,
+			"content" => $content, "ttl" => $ttl,
+			"prio" => $prio, "change_date" => $changeDate
+		], FALSE);  //don't show error if no change was made
+		
+		if($updateSerial)
 		{
-			if($updateSerial)
-			{
-				// UPDATE THE SOA SERIAL
-				$this->updateSoaSerial($domainId);
-			}
-
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
+			// UPDATE THE SOA SERIAL
+			$this->updateSoaSerial($domainId);
 		}
+
+		return true;
+		
 	}
 
 	function removeRecord ($recordId, $domainId)
 	{
 		$query = "DELETE records FROM records, zones WHERE records.domain_id = zones.domain_id AND";
-
+		$queryArgs = [];
 		if($_SESSION['level']<5)
 		{
-			$query .= " zones.owner = '".$_SESSION['userId']."' AND";
+			$query .= " zones.owner = ? AND";
+			$queryArgs []= $_SESSION['userId'];
 		}
 
-		$query .= " records.id='".$this->database->escape_string($recordId)."'";
-
-		if($this->database->query_master($query))
+		$query .= " records.id=?";
+		$queryArgs []= $recordId;
+		if($this->database->query_master($query, $queryArgs))
 		{
 			// UPDATE THE SOA SERIAL
 			$this->updateSoaSerial($domainId);
@@ -498,7 +427,7 @@ class manager
 
 	function getAllRecords ($domainId)
 	{
-		$query = "SELECT * FROM zones z, records r
+		$query = "SELECT *, CONCAT(r.id,'.',r.prio,'.',r.name,'.',9-find_in_set(r.type, 'MX,NS,SOA')) AS `_sort_key` FROM zones z, records r
 		WHERE r.domain_id = z.domain_id AND";
 
 		if($_SESSION['level']<5)
@@ -506,22 +435,22 @@ class manager
 			$query .= " z.owner = '".$_SESSION['userId']."' AND";
 		}
 
-		$query .= " r.domain_id = '".$this->database->escape_string($domainId)."'
-		ORDER BY r.type DESC, r.prio ASC, r.name ASC";
+		$query .= " r.domain_id = ?";
 
-		$query = $this->database->query_slave($query) or die ($this->database->error());
+		$query = $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
 
 		if($this->database->num_rows($query)==0)
 		{
-			return '';
+			return [];
 		}else
 		{
-			while($record=$this->database->fetch_array($query))
+			while($record=$this->database->fetch_row($query))
 			{
-				$return[] = $record;
+				$sortkey = implode('.', array_reverse(explode('.', $record['_sort_key'])));
+				$return[$sortkey] = $record;
 			}
-
-			return $return;
+			ksort($return);
+			return array_values($return);
 		}
 	}
 
@@ -535,15 +464,10 @@ class manager
 			$query .= " zones.owner = '".$_SESSION['userId']."' AND";
 		}
 
-		$query .= " records.domain_id='".$this->database->escape_string($domainId)."';";
+		$query .= " records.domain_id=?;";
 
-		if($this->database->query_master($query))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		$this->database->query_master($query, [ $domainId ]);
+		return true;
 	}
 
 	function createNewSoaSerial ()
@@ -553,9 +477,9 @@ class manager
 
 	function updateSoaSerial ($domainId)
 	{
-		$query 		= "SELECT content FROM records WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
-		$query 		= $this->database->query_slave($query) or die ($this->database->error());
-		$record		= $this->database->fetch_array($query);
+		$query 		= "SELECT content FROM records WHERE domain_id=? AND type='SOA'";
+		$query 		= $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
+		$record		= $this->database->fetch_row($query);
 		$soa		= explode(" ", $record['content']);
 
 		if(substr($soa[2], 0, 8) != date("Ymd")) // IF THE SOA ISN'T OF TODAY THEN CREATE A NEW SOA
@@ -566,22 +490,19 @@ class manager
 			$soa[2]++;
 		}
 
-		return $this->setSoaSerial ($domainId, $soa[0], $soa[1], $soa[2]);
+		return $this->setSoaSerial ($domainId, $soa[0], $soa[1], $soa[2], $soa[3], $soa[4], $soa[5], $soa[6]);
 	}
 
-	function setSoaSerial ($domainId, $ns0, $hostmaster, $serial)
+	function setSoaSerial ($domainId, $ns0, $hostmaster, $serial, $refresh, $retry, $expire, $ttl)
 	{
-		$query		= "UPDATE records SET content='".$this->database->escape_string($ns0." ".$hostmaster." ".$serial)."' WHERE domain_id='".$this->database->escape_string($domainId)."' AND type='SOA'";
-
-		if($this->database->query_master($query))
-		{
-			return true;
-		}else
-		{
-			throw new Exception ($this->database->error());
-		}
+		if(!$refresh) $refresh = 3600;
+		if(!$retry) $retry = 1800;
+		if(!$expire) $expire = 3600000;
+		if(!$ttl) $ttl = 172800;
+		
+		return $this->database->updateModel('records', [ 'domain_id' => $domainId, 'type' => 'SOA' ],
+										[ 'content' => "$ns0 $hostmaster $serial $refresh $retry $expire $ttl" ]);
 	}
 
 	/* **************************************** */
 }
-?>
