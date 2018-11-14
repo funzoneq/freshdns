@@ -14,14 +14,22 @@ class PDO_DB {
 	
 	/*****************************************************/
 	
-	function __construct () {
-		if (session_id() == "") session_start();
-		
-		// REPLICATION STANDARD OFF
-		$this->replication = 0;
+	function __construct($username, $password, $master, $slave = array(), $replication=FALSE)
+	{
+		$this->username = $username;
+		$this->password = $password;
+		$this->masterDSN = $master;
+		$this->slaveDSNs = $slaves;
+		$this->replication = $replication;
 		$this->pdoOptions = [
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 		];
+		if (!$replication) {
+			$this->selectedSlaveDSN = $master;
+			$this->connectToMysql();
+		} else {
+			$this->initiate();
+		}
 	}
 	
 	function __destruct () {
@@ -33,8 +41,8 @@ class PDO_DB {
 	{
 		// PICK RANDOM READER AND SAVE IT (PERSISTENT)
 		if(!isset($_SESSION['SS_DSN'])){
-			$aantal = count($this->slaveDSNs)-1;
-			$_SESSION['SS_DSN'] = rand(0,$aantal);
+			$number = count($this->slaveDSNs)-1;
+			$_SESSION['SS_DSN'] = rand(0,$number);
 		}
 		
 		// SELECT SERVER (SLAVE)
@@ -42,15 +50,15 @@ class PDO_DB {
 		
 		// CONNECT TO MYSQL
 		$this->setstats();
-		$this->connect_to_mysql();
+		$this->connectToMysql();
 	}
 	
-	function connect_to_mysql (){
+	function connectToMysql (){
 		// CONNECT TO A SLAVE
 		$this->slave = new PDO($this->selectedSlaveDSN, $this->username, $this->password, $this->pdoOptions);
 	}
 	
-	function connect_to_mysql_master(){
+	function connectToMysqlMaster(){
 		if($this->replication==1)
 		{
 			// CONNECT TO THE MASTER
@@ -221,5 +229,9 @@ class PDO_DB {
 	}
 	function rollBack() {
 		$this->master->rollBack();
+	}
+
+	function escape($str) {
+		return $this->slave->quote($str);
 	}
 }

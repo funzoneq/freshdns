@@ -1,7 +1,6 @@
 <?php
 abstract class database
 {
-	abstract function initiate ();
 	
 	abstract function query_slave($query);
 	
@@ -35,5 +34,5 @@ abstract class database
 	
 	abstract function setReplication ($replication);
 	
-	abstract function setVars ($username, $password, $database, $master, $slave = array(), $replication='');
+	abstract function __construct ($username, $password, $database, $master, $slave = array(), $replication='');
 }

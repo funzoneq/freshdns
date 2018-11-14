@@ -4,7 +4,14 @@ header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 include_once('./config.inc.php');
-include_once('./class/class.U2F.php');
+include_once(CLASSES.'class.U2F.php');
+include_once(CLASSES.'class.database.php');
+include_once(CLASSES.'class.PDO.php');
+include_once(CLASSES.'class.manager.php');
+include_once(CLASSES.'class.login.php');
+include_once(CLASSES.'class.JSON.php');
+
+$config['database'] = new PDO_DB($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
 
 $login = new login($config['database']);
 $json = new Services_JSON();

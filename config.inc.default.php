@@ -63,15 +63,4 @@ array("name" => "{#DOMAIN#}",           "type" => "MX",         "content" => "AS
 
 /*****************************************************/
 
-include_once(CLASSES.'class.database.php');
-include_once(CLASSES.'class.PDO.php');
-include_once(CLASSES.'class.manager.php');
-include_once(CLASSES.'class.login.php');
-include_once(CLASSES.'class.JSON.php');
-
-/*****************************************************/
-
-$config['database'] = new PDO_DB();
-$config['database']->setVars($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
-$config['database']->initiate();
 ?>
