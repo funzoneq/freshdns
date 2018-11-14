@@ -11,7 +11,7 @@ class install
 	function pdns_sql ()
 	{
 		$query = array();
-		$query[] = "CREATE TABLE IF NOT EXISTS domains (
+		$query["create domains"] = "CREATE TABLE IF NOT EXISTS domains (
 		 id		 INT auto_increment,
 		 name		 VARCHAR(255) NOT NULL,
 		 master		 VARCHAR(20) DEFAULT NULL,
@@ -20,11 +20,11 @@ class install
 		 notified_serial INT DEFAULT NULL, 
 		 account         VARCHAR(40) DEFAULT NULL,
 		 primary key (id)
-		)type=InnoDB;";
+		) Engine=InnoDB;";
 		
-		$query[] = "CREATE UNIQUE INDEX name_index ON domains(name);";
+		$query["create index on domains"] = "CREATE UNIQUE INDEX  name_index ON domains(name);";
 		
-		$query[] = "CREATE TABLE IF NOT EXISTS records (
+		$query["create records"] = "CREATE TABLE IF NOT EXISTS records (
 		  id              INT auto_increment,
 		  domain_id       INT DEFAULT NULL,
 		  name            VARCHAR(255) DEFAULT NULL,
@@ -34,21 +34,30 @@ class install
 		  prio            INT DEFAULT NULL,
 		  change_date     INT DEFAULT NULL,
 		  primary key(id)
-		)type=InnoDB;";
+		) Engine=InnoDB;";
 		
-		$query[] = "CREATE INDEX rec_name_index ON records(name);";
-		$query[] = "CREATE INDEX nametype_index ON records(name,type);";
-		$query[] = "CREATE INDEX domain_id ON records(domain_id);";
+		$query["create index on records 1"] = "CREATE INDEX rec_name_index ON records(name);";
+		$query["create index on records 2"] = "CREATE INDEX nametype_index ON records(name,type);";
+		$query["create index on records 3"] = "CREATE INDEX domain_id ON records(domain_id);";
 		
-		$query[] = "CREATE TABLE IF NOT EXISTS supermasters (
+		$query["create supermasters"] = "CREATE TABLE IF NOT EXISTS supermasters (
 		  ip VARCHAR(25) NOT NULL, 
 		  nameserver VARCHAR(255) NOT NULL, 
 		  account VARCHAR(40) DEFAULT NULL
 		);";
-		
-		foreach($query AS $Q)
+		$this->run_queries_with_log($query);
+	}
+
+	function run_queries_with_log($query) {
+		foreach($query AS $name => $Q)
 		{
-			@$this->database->query_master($Q);
+			try {
+				echo "<li>$name";
+				$this->database->queryMaster($Q);
+				echo " - success</li>";
+			}catch(Exception $ex) {
+				echo " - failed:<br><pre>$ex</pre></li>";
+			}
 		}
 	}
 	
@@ -56,14 +65,14 @@ class install
 	{
 		$query = array();
 		
-		$query[] = "CREATE TABLE IF NOT EXISTS `record_owners` (
+		$query["create record_owners"] = "CREATE TABLE IF NOT EXISTS `record_owners` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `user_id` int(11) NOT NULL default '0',
 		  `record_id` int(11) NOT NULL default '0',
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
-		$query[] = "CREATE TABLE IF NOT EXISTS `users` (
+		$query["create users"] = "CREATE TABLE IF NOT EXISTS `users` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `username` varchar(16) NOT NULL default '',
 		  `password` TEXT NOT NULL,
@@ -72,11 +81,11 @@ class install
 		  `description` text NOT NULL,
 		  `level` tinyint(3) NOT NULL default '0',
 		  `active` tinyint(1) NOT NULL default '0',
-		  `u2fdata` text not null default ''
+		  `u2fdata` text not null default '',
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
-		$query[] = "CREATE TABLE IF NOT EXISTS `zones` (
+		$query["create zones"] = "CREATE TABLE IF NOT EXISTS `zones` (
 		  `id` int(11) NOT NULL auto_increment,
 		  `domain_id` int(11) NOT NULL default '0',
 		  `owner` int(11) NOT NULL default '0',
@@ -84,16 +93,19 @@ class install
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
     
-		$query[] = "ALTER TABLE `users` ADD `maxdomains` SMALLINT( 5 ) NOT NULL;";
+		$query["add column maxdomains to users"] = "ALTER TABLE `users` ADD `maxdomains` SMALLINT( 5 ) NOT NULL;";
+		$query["1.0.4 change password field type"] = "alter table users modify password  text not null default '';";
+		$query["1.0.5 add u2fdata to users"] = "alter table users add u2fdata text not null default '';";
+		$query["1.0.5 add unique key on username"] = "CREATE UNIQUE INDEX username_index ON users (username);";
 
-		$query[] = "CREATE TABLE IF NOT EXISTS `template` (
+		$query["create template"] = "CREATE TABLE IF NOT EXISTS `template` (
 		  `templateId` int(11) NOT NULL AUTO_INCREMENT,
 		  `userId` int(11) NOT NULL,
 		  `name` varchar(255) NOT NULL,
 		  PRIMARY KEY (`templateId`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 
-		$query[] = "CREATE TABLE IF NOT EXISTS `template_records` (
+		$query["create template_records"] = "CREATE TABLE IF NOT EXISTS `template_records` (
 		  `recordId` int(11) NOT NULL AUTO_INCREMENT,
 		  `templateId` int(11) NOT NULL,
 		  `name` varchar(255) NOT NULL,
@@ -105,29 +117,13 @@ class install
 		  KEY `templateId` (`templateId`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
-		foreach($query AS $Q)
-		{
-			$this->database->query_master($Q) or die ($this->database->error());
-		}
+		$this->run_queries_with_log($query);
 	}
 	
 	function zonelessdomains ()
 	{
 		$query = "SELECT d.id FROM domains d
-		LEFT OUTER JOIN zones z ON z.domain_id=d.id;";
-		$query = $this->database->query_master($query) or die ($this->database->error());
-		
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			while($record=$this->database->fetch_array($query))
-			{
-				$return[] = $record;
-			}
-		
-			return $return;
-		}
+		LEFT OUTER JOIN zones z ON z.domain_id=d.id where z.domain_id IS NULL;";
+		return $this->database->fetchAll($query, [  ]);
 	}
 }

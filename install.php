@@ -2,13 +2,13 @@
 switch($_GET['p'])
 {
 	default:
-		echo '<form method="post" action="install.php?p=do_install">
+		echo '<form method="post" action="install.php?p=build_config">
 		<table>
 		  <tr>
 		    <td>Database type:</td>
 			<td><select name="db_type">
 			<option value="mysql">MySQL</option>
-			<option value="postgresql">PostgreSQL</option>
+			<option value="pgsql">PostgreSQL</option>
 			</select></td>
 		  </tr>
 		  <tr>
@@ -58,19 +58,29 @@ switch($_GET['p'])
 		</table></form>';
 	break;
 	
-	case "do_install":
+	case "build_config":
+		include_once("./class/class.PDO.php");
+		$dsn = $_POST['db_type'] . ':dbname=' . $_POST['db_base'] . ';host='.$_POST['db_host'];
+		try {
+			$db = new PDO_DB($_POST['db_user'], $_POST['db_pass'], $dsn, array($dsn), FALSE);
+			echo "<h3>Database connection successful</h3>";
+		} catch(Exception $ex) {
+			echo "<h3>Connecting to the database failed</h3><p>Please check your inputs and try again (Used DSN: <code>$dsn</code>)</p>";
+			echo "<pre>$ex</pre>";
+			exit;
+		}
+
 		echo 'Copy the following <b>over</b> the original in config.inc.php<br /><br />
 		
-		<b>Database settings</b>
+		<h3>Database settings</h3>
 		
 		<textarea name="configsettings" cols="150" rows="15">
-$config[\''.$_POST['db_type'].'\'][\'use\']						= true;
-$config[\''.$_POST['db_type'].'\'][\'username\']					= \''.$_POST['db_user'].'\';
-$config[\''.$_POST['db_type'].'\'][\'password\']					= \''.$_POST['db_pass'].'\';	
-$config[\''.$_POST['db_type'].'\'][\'database\']					= \''.$_POST['db_base'].'\';
-$config[\''.$_POST['db_type'].'\'][\'master_host\']					= \''.$_POST['db_host'].'\';
-$config[\''.$_POST['db_type'].'\'][\'slave_hosts\']					= array(\''.$_POST['db_host'].'\',\''.$_POST['db_host'].'\'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
-$config[\''.$_POST['db_type'].'\'][\'use_replication\']				= \'0\';	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config[\'DB\'][\'use\']						= true;
+$config[\'DB\'][\'username\']					= \''.$_POST['db_user'].'\';
+$config[\'DB\'][\'password\']					= \''.$_POST['db_pass'].'\';
+$config[\'DB\'][\'master_dsn\']					= \''.$_POST['db_dsn'].'\';
+$config[\'DB\'][\'slave_dsns\']					= array(\''.$_POST['db_dsn'].'\'); // DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
+$config[\'DB\'][\'use_replication\']				= 0;	// DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING!
 </textarea>
 		
 		<textarea name="configsettings2" cols="150" rows="10">
@@ -80,17 +90,42 @@ $config[\'DNS\'][\'ns2\']						= \''.$_POST['ns2'].'\';
 $config[\'DNS\'][\'hostmaster\']					= \''.$_POST['hostmaster'].'\';
 		</textarea>
 		
-		Done? Save and upload the editted file. <a href="install.php?p=install_db">Next step</a>';
+		<h4>Done? Save and upload the edited file. <a href="install.php?p=install_db">Next step</a></h4>';
 	break;
 	
 	case "install_db":
+		require_once("config.inc.php");
+		require_once("./class/class.PDO.php");
+		require_once("./class/class.install.php");
+		
+		try {
+			$config['database'] = new PDO_DB($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
+		} catch(Exception $ex) {
+			echo "<h3>Connecting to the database failed</h3><p>Please check your inputs and try again (Used DSN: <code>$dsn</code>)</p>";
+			echo "<pre>$ex</pre>";
+			exit;
+		}
+		try {
+			$install = new install ($config['database']);
+			$install->pdns_sql();
+			$install->padmin_sql();
+		} catch(Exception $ex) {
+			echo "<h3>Database Update Failed</h3>";
+			echo "<pre>$ex</pre>";
+		}
+
+		echo '<h4>Done. <a href="install.php?p=add_admin_form">Next step</a></h4>';
+		break;
+	case "add_admin_form":
 		include_once("config.inc.php");
-		include_once("./class/class.install.php");
+		include_once("./class/class.PDO.php");
 		
-		$install = new install ($config['database']);
-		$install->pdns_sql();
-		$install->padmin_sql();
-		
+		$db = new PDO_DB($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
+
+		if (count($db->fetchAll("SELECT username FROM users WHERE `level` >= 10;", [ ])) > 0) {
+			echo "<h3>An admin user does already exist. Refusing to continue with the installer.</h3>";
+			exit;
+		}
 		echo '<form method="post" action="install.php?p=do_add_admin">
 		<table>
 		  <tr>
@@ -126,32 +161,49 @@ $config[\'DNS\'][\'hostmaster\']					= \''.$_POST['hostmaster'].'\';
 	
 	case "do_add_admin":
 		include_once("config.inc.php");
+		include_once("./class/class.PDO.php");
+		include_once("./class/class.manager.php");
 		include_once("./class/class.install.php");
 		
+		$db = new PDO_DB($config['DB']['username'], $config['DB']['password'], $config['DB']['master_dsn'], $config['DB']['slave_dsns'], $config['DB']['use_replication']);
+
+		if (count($db->fetchAll("SELECT username FROM users WHERE `level` >= 10;", [ ])) > 0) {
+			echo "<h3>An admin user does already exist. Refusing to continue with the installer.</h3>";
+			exit;
+		}
 		try
 		{
 			$_SESSION['level'] = 10;
 			
-			$manager = new manager ($config['database']);
-			$install = new install ($config['database']);
-			$userId = $manager->addUser ($_POST['username'], md5($_POST['password']), $_POST['fullname'], $_POST['email'], $_POST['description'], 10, 1);
-			
+			$manager = new manager ($db);
+			$install = new install ($db);
+			$userId = $manager->addUser ($_POST['username'], $_POST['password'], $_POST['fullname'], $_POST['email'], $_POST['description'], 10, 1, 0);
+			echo "Admin account added. <br>";
+		}catch(Exception $ex)
+		{
+			echo "<h3>Failed to create admin user</h3>".$ex->getMessage();
+			exit;
+		}
+		try
+		{
 			// LET'S FIND SOME ZONELESS DOMAINS!
 			$records = $install->zonelessdomains();
 			foreach($records AS $r)
 			{
+				echo "<li>Adding new admin account to domain #".$r['id'];
 				// ADD A ZONE FOR THAT SILLY DOMAIN
 				$manager->addZone($r['id'], $userId, "");
 			}
 			
 			session_destroy();
 			
-			echo "Admin account added. <b><font color=\"red\">Please remove install.php and ./class/class.install.php from the webserver!</font></b><br /><br />
-			Installation done!";
 		}catch(Exception $ex)
 		{
-			echo $ex->getMessage();
+			echo "<h3>Failed to add zones to unassigned domains</h3>".$ex->getMessage();
+			exit;
 		}
+		echo "<li><b><font color=\"red\">Please remove install.php and ./class/class.install.php from the webserver!</font></b><br /><br />
+		Installation done!";
 	break;
 }
 ?>
