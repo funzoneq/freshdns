@@ -5,7 +5,7 @@ if (session_id() == "") session_start();
 
 define('PATH', 			'./');
 define('CLASSES',		PATH.'class/');
-define('VERSION',		'1.0.3');
+define('VERSION',		'1.0.5');
 
 /*****************************************************/
 
