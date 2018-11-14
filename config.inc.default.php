@@ -61,6 +61,3 @@ array("name" => "{#DOMAIN#}",           "type" => "MX",         "content" => "AS
 array("name" => "{#DOMAIN#}",           "type" => "MX",         "content" => "ASPMX4.GOOGLEMAIL.COM",               "prio" => "10", "ttl" => "3600"),
 array("name" => "{#DOMAIN#}",           "type" => "MX",         "content" => "ASPMX5.GOOGLEMAIL.COM",               "prio" => "10", "ttl" => "3600"));
 
-/*****************************************************/
-
-?>

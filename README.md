@@ -17,3 +17,24 @@ Go to http://localhost/freshdns/install.php?p=install_db and create an admin use
 Remove the installation files:
 
     rm class/class.install.php install.php
+
+
+# Upgrade notes
+
+## 1.0.3 or below --> 1.0.5 or above
+
+  * Run the sql queries in sql_upgrade/mysql.103.104.sql and sql_upgrade/mysql.104.105.sql
+
+  * Adapt your config.inc.php to the changes in config.inc.default.php, especially as follows:
+    
+    * Use the PDO Data Source Name syntax for the database connection
+    
+          //...
+          $config['DB']['master_dsn']		= 'mysql:dbname=pdns;host=127.0.0.1';
+          $config['DB']['slave_dsns']		= array('mysql:dbname=pdns;host=127.0.0.1','mysql:dbname=pdns;host=127.0.0.1');
+          //...
+        
+    * remove the lines starting with 'include_once(...)' and all below
+
+
+

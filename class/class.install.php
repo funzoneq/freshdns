@@ -72,6 +72,7 @@ class install
 		  `description` text NOT NULL,
 		  `level` tinyint(3) NOT NULL default '0',
 		  `active` tinyint(1) NOT NULL default '0',
+		  `u2fdata` text not null default ''
 		  PRIMARY KEY  (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 		
