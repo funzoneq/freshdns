@@ -25,7 +25,7 @@ class PDO_DB {
 	
 	/*****************************************************/
 	
-	function __construct($username, $password, $master, $slave = array(), $replication=FALSE)
+	function __construct($username, $password, $master, $slaves = array(), $replication=FALSE)
 	{
 		$this->username = $username;
 		$this->password = $password;
