@@ -73,7 +73,7 @@ class PDO_DB {
 		if($this->replication==1)
 		{
 			// CONNECT TO THE MASTER
-			$this->slave = new PDO($this->masterDSN, $this->username, $this->password, $this->pdoOptions);
+			$this->master = new PDO($this->masterDSN, $this->username, $this->password, $this->pdoOptions);
 		}else
 		{
 			// ONLY CONNECT ONCE!
