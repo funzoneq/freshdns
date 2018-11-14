@@ -112,18 +112,13 @@ class manager
 		if($_SESSION['level']>=5)
 		{
 
-			$query = "DELETE FROM zones z, domains d, records r USING zones z, domains d, records r
-			WHERE z.domain_id = d.id AND
-			z.domain_id = r.domain_id AND
-			z.owner = ?;";
+			$query = "DELETE FROM zones, domains, records USING zones, domains, records
+			WHERE zones.domain_id = domains.id AND
+			zones.domain_id = records.domain_id AND
+			zones.owner = ?;";
 
-			if($this->database->queryMaster($query, [ $userId ]))
-			{
-				return true;
-			}else
-			{
-				throw new Exception ($this->database->error());
-			}
+			$this->database->queryMaster($query, [ $userId ]);
+			return true;
 		}
 	}
 
