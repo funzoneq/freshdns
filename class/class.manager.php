@@ -24,7 +24,7 @@ class manager
 			return false;
 		}
 
-		if($this->database->createModel('users', [
+		return $this->database->createModel('users', [
 			'username' => $username,
 			'password' => password_hash($password, PASSWORD_DEFAULT),
 			'fullname' => $fullname, 
@@ -33,13 +33,7 @@ class manager
 			'level' => $level, 
 			'active' => $active, 
 			'maxdomains' => $maxdomains
-		]))
-		{
-			return mysql_insert_id();
-		}else
-		{
-			throw new Exception($this->database->error());
-		}
+		]);
 	}
 
 	function getUser ($userId)
@@ -126,17 +120,11 @@ class manager
 
 	function addZone ($domainId, $ownerUserId, $comment)
 	{
-		if($this->database->createModel('zones', [
+		return $this->database->createModel('zones', [
 			'domain_id' => $domainId,
 			'owner' => $ownerUserId,
 			'comment' => $comment
-		]))
-		{
-			return mysql_insert_id();
-		}else
-		{
-			throw new Exception($this->database->error());
-		}
+		]);
 	}
 
 	function editZone ($domainId, $newOwnerUserId)
@@ -334,7 +322,7 @@ class manager
 
 	function addRecord ($domainId, $name, $type, $content, $ttl, $prio, $changeDate)
 	{
-		$this->database->createModel('records', [
+		$id = $this->database->createModel('records', [
 			"domain_id" => $domainId,
 			"name" => trim($name),
 			"type" => $type,
@@ -347,7 +335,7 @@ class manager
 		// UPDATE THE SOA SERIAL
 		$this->updateSoaSerial($domainId);
 
-		return mysql_insert_id();
+		return $id;
 	}
 
 	function updateRecord ($orgRecordId, $recordId, $domainId, $name, $type, $content, $ttl, $prio, $changeDate, $updateSerial = true)
