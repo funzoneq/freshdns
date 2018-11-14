@@ -1,24 +1,23 @@
 <?php
 abstract class database
 {
+	abstract function querySlave($query);
 	
-	abstract function query_slave($query);
-	
-	abstract function query_master($query);
+	abstract function queryMaster($query);
 	
 	abstract function error ();
 	
 	/**
 	 * fetch one database row at a time, as an associative array
 	 */
-	abstract function fetch_row($query);
+	abstract function fetchRow($query);
 
 	/**
 	 * fetch all result rows at once, as an indexed array of associative arrays
 	 */
-	abstract function fetch_all($query);
+	abstract function fetchAll($query);
 	
-	abstract function num_rows ($query);
+	abstract function rowCount ($query);
 	
 	abstract function escape_string ($string);
 	

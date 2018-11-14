@@ -34,8 +34,8 @@ class login
 		if(isset($_SESSION['loggedIn'], $_SESSION['userId'], $_SESSION['username'], $_SESSION['level']))
 		{
 			$query = "SELECT id FROM users WHERE username=? AND level=? AND id=? AND active='1'";
-			$query = $this->database->query_slave($query, [ $_SESSION['username'], $_SESSION['level'], $_SESSION['userId'] ]);
-			if($this->database->num_rows($query)!=1)
+			$query = $this->database->querySlave($query, [ $_SESSION['username'], $_SESSION['level'], $_SESSION['userId'] ]);
+			if($this->database->rowCount($query)!=1)
             {
             	throw new Exception ("FakeLoginFound");
 				return false;
@@ -53,9 +53,8 @@ class login
 	{
 		global $u2f;
 		$query = "SELECT id, fullname, level, password, u2fdata FROM users WHERE username=? AND active='1'";
-		$query = $this->database->query_slave($query, [ $username ]);
+		$record = $this->database->fetchRow($query, [ $username ]);
 		
-		$record = $this->database->fetch_row($query);
 		if(!$record || !(password_verify($password, $record['password']) || md5($password) === $record['password']))
 		{
 			throw new Exception ("User not found or inactive or password invalid");
@@ -89,25 +88,22 @@ class login
 		$_SESSION['authReq'] = NULL;
 		if ($username !== $_SESSION['username']) throw new Exception("InvalidRequest");
 		$query = "SELECT u2fdata FROM users WHERE username=? AND active='1'";
-		$query = $this->database->query_slave($query, [ $username ]);
-
-		if($this->database->num_rows($query)!=1) {
+		$record = $this->database->fetchRow($query, [ $username ]);
+		if(!$record)
 			throw new Exception ("NoUserFound");
-		}else{
-			$record = $this->database->fetch_row($query);
-			if ($record['u2fdata'] != NULL) {
-				$u2fdata = json_decode($record['u2fdata']);
-				$data = $u2f->doAuthenticate($authReq, $u2fdata, json_decode($response));
-				foreach($u2fdata as &$i) {
-					if ($i->id == $data->id) $i->counter = $data->counter;
-				}
-				$this->database->updateModel('users', [ 'username' => $username ],
-											[ 'u2fdata' => json_encode($u2fdata) ]);
 
-				$_SESSION['loggedIn'] = true;
-				$this->generateXsrfToken();
-				return TRUE;
+		if ($record['u2fdata'] != NULL) {
+			$u2fdata = json_decode($record['u2fdata']);
+			$data = $u2f->doAuthenticate($authReq, $u2fdata, json_decode($response));
+			foreach($u2fdata as &$i) {
+				if ($i->id == $data->id) $i->counter = $data->counter;
 			}
+			$this->database->updateModel('users', [ 'username' => $username ],
+										[ 'u2fdata' => json_encode($u2fdata) ]);
+
+			$_SESSION['loggedIn'] = true;
+			$this->generateXsrfToken();
+			return TRUE;
 		}
 		throw new Exception("LoginError");
 	}

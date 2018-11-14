@@ -8,8 +8,8 @@ FROM `records`
 WHERE `type` = 'MX'
 GROUP BY name
 ORDER BY prio DESC";
-$query = $config['database']->query_slave($query) or die ($config['database']->error());
-while($record = $config['database']->fetch_row($query))
+$query = $config['database']->querySlave($query) or die ($config['database']->error());
+while($record = $config['database']->fetchRow($query))
 {
 	try{
 		$manager->addRecord ($record['domain_id'], $record['name'], $record['type'], $fallbackHostname, $record['ttl'], ($record['prio']+10), time());

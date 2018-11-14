@@ -1,4 +1,15 @@
 <?php
+
+class DBRaw {
+	public $value;
+	public $operator;
+	public function __construct($v, $op = "=") {
+		$this->value = $v;
+		$this->operator = $op;
+	}
+}
+function DB_Now() { return new DBRaw("NOW()"); }
+
 class PDO_DB {
 	private $master;
 	private $slave;
@@ -73,27 +84,27 @@ class PDO_DB {
 	
 	/*****************************************************/
 	
-	function query_slave($query, $parameters)
+	function querySlave($sqlQuery, $parameters)
 	{
 		if(!$this->slave){
-			$this->connect_to_mysql();
+			$this->connectToMysql();
 		}
 		
 		$this->NRslaveQ++;
-		$statement = $this->slave->prepare($query);
+		$statement = $this->slave->prepare($sqlQuery);
 		if ($statement->execute($parameters)) {
 			return $statement;
 		}
 	}
 	
-	function query_master($query, $parameters)
+	function queryMaster($sqlQuery, $parameters)
 	{
 		if(!$this->master){
-			$this->connect_to_mysql_master();
+			$this->connectToMysqlMaster();
 		}
 		
 		$this->NRmasterQ++;
-		$statement = $this->slave->prepare($query);
+		$statement = $this->master->prepare($sqlQuery);
 		if ($statement->execute($parameters)) {
 			return $statement;
 		}
@@ -104,17 +115,19 @@ class PDO_DB {
 		return $this->master->errorCode();
 	}
 	
-	function fetch_row($query)
+	function fetchRow($sqlQuery, $parameters)
 	{
-		return $query->fetch(PDO::FETCH_ASSOC);
+		$stmt = $this->querySlave($sqlQuery, $parameters);
+		return $stmt->fetch(PDO::FETCH_ASSOC);
 	}
-	function fetch_all($query)
+	function fetchAll($sqlQuery, $parameters)
 	{
-		return $query->fetchAll(PDO::FETCH_ASSOC);
+		$stmt = $this->querySlave($sqlQuery, $parameters);
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
-	function num_rows ($query)
+	function rowCount ($stmt)
 	{
-		return $query->rowCount();
+		return $stmt->rowCount();
 	}
 	
 	
@@ -134,93 +147,51 @@ class PDO_DB {
 		$this->NRslaveQ 	= '0';
 	}
 	
-	function setUsername ($username)
-	{
-		$this->username = $username;
+	private function buildQueryPart($fields, $joiner, &$queryArgs) {
+		$queryParts = [];
+		foreach($fields as $k => $v) {
+			if ($v instanceof DBRaw) {
+				$queryParts[] = "`$k` " . $v->operator . " " . $v->value;
+			} else {
+				$queryParts[] = "`$k` = ?";
+				$queryArgs[] = $v;
+			}
+		}
+		return implode($joiner, $queryParts);
 	}
-	
-	function setPassword ($password)
-	{
-		$this->password = $password;
-	}
-	
-	function setMasterDSN ($master)
-	{
-		$this->masterDSN = $master;
-	}
-	
-	function setSlaveDSNs ($slaves = array())
-	{
-		$this->slaveDSNs = $slaves;
-	}
-	
-	function setReplication ($replication)
-	{
-		$this->replication = $replication;
-	}
-	
+
 	function updateModel($tableName, $idFields, $fieldsToUpdate, $exactlyOne=TRUE) {
 		$query = "UPDATE `$tableName` ";
 		$queryArgs = [];
-		$queryParts = [];
-		foreach($fieldsToUpdate as $k => $v) {
-			$queryParts[] = "`$k` = ?";
-			$queryArgs[] = $v;
-		}
-		$query .= " SET " . implode(", ", $queryParts);
-		
-		$queryParts = [];
-		foreach($idFields as $k => $v) {
-			$queryParts[] = "`$k` = ?";
-			$queryArgs[] = $v;
-		}
-		$query .= " WHERE " . implode(" AND ", $queryParts);
+		$query .= " SET " . $this->buildQueryPart($fieldsToUpdate, ", ", $queryArgs);
+		$query .= " WHERE " . $this->buildQueryPart($idFields, " AND ", $queryArgs);
 		if ($exactlyOne) $query .= " LIMIT 1;";
-		$res = $this->query_master($query, $queryArgs);
+		$res = $this->queryMaster($query, $queryArgs);
 		if ($exactlyOne && $res->rowCount() != 1) throw new Exception("update Model failed - ".$res->rowCount()." matches");
 		return $res;
 	}
 	
 	function deleteModel($tableName, $idFields, $exactlyOne=TRUE) {
-		$query = "DELETE FROM `$tableName` WHERE ";
+		$query = "DELETE FROM `$tableName` ";
 		$queryArgs = [];
-		$queryParts = [];
-		foreach($idFields as $k => $v) {
-			$queryParts[] = "`$k` = ?";
-			$queryArgs[] = $v;
-		}
-		$query .= implode(" AND ", $queryParts);
+		$query .= " WHERE " . $this->buildQueryPart($idFields, " AND ", $queryArgs);
 		if ($exactlyOne) $query .= " LIMIT 1;";
-		$res = $this->query_master($query, $queryArgs);
+		$res = $this->queryMaster($query, $queryArgs);
 		if ($exactlyOne && $res->rowCount() != 1) throw new Exception("delete Model failed - ".$res->rowCount()." matches");
 		return $res;
 	}
 	
 	function createModel($tableName, $fieldsToUpdate) {
-		$query = "INSERT INTO `$tableName` SET ";
+		$query = "INSERT INTO `$tableName` ";
 		$queryArgs = [];
-		$queryParts = [];
-		foreach($fieldsToUpdate as $k => $v) {
-			$queryParts[] = "`$k` = ?";
-			$queryArgs[] = $v;
-		}
-		$query .= implode(", ", $queryParts);
-		$res = $this->query_master($query, $queryArgs);
+		$query .= " SET " . $this->buildQueryPart($fieldsToUpdate, ", ", $queryArgs);
+		$res = $this->queryMaster($query, $queryArgs);
 		return $this->master->lastInsertId();
 	}
 	
-	function setVars ($username, $password, $master, $slave = array(), $replication='')
-	{
-		$this->setUsername($username);
-		$this->setPassword($password);
-		$this->setMasterDSN($master);
-		$this->setSlaveDSNs($slave);
-		$this->setReplication($replication);
-	}
-
 	function beginTransaction() {
 		if(!$this->master){
-			$this->connect_to_mysql_master();
+			$this->connectToMysqlMaster();
 		}
 		$this->master->beginTransaction();
 	}

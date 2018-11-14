@@ -46,26 +46,21 @@ class manager
 	{
 		global $u2f;
 		$query = "SELECT * FROM users WHERE id = ?";
-		$query = $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
+		$userdata = $this->database->fetchRow($query, [ $userId ]) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
-		{
-			return '';
-		}else
-		{
-			
-			$userdata = $this->database->fetch_row($query);
-			$u2fdata = array();
-			if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
-			if (!is_array($u2fdata)) $u2fdata = array();
-			
-			list($req,$sigs) = $u2f->getRegisterData($u2fdata);
-			$_SESSION['regReq'] = json_encode($req);
-			$userdata['u2f_req'] = $req;
-			$userdata['u2f_sigs'] = $sigs;
-			
-			return $userdata;
-		}
+		if(!$userdata)
+			throw new Exception("User not found");
+
+		$u2fdata = array();
+		if ($userdata['u2fdata']) $u2fdata = json_decode($userdata['u2fdata']);
+		if (!is_array($u2fdata)) $u2fdata = array();
+		
+		list($req,$sigs) = $u2f->getRegisterData($u2fdata);
+		$_SESSION['regReq'] = json_encode($req);
+		$userdata['u2f_req'] = $req;
+		$userdata['u2f_sigs'] = $sigs;
+		
+		return $userdata;
 	}
 
 	function updateUser ($orgUserId, $userId, $username, $password, $fullname, $email, $description, $level, $active, $maxdomains, $u2fdata)
@@ -107,13 +102,8 @@ class manager
 	{
 		if($_SESSION['level']>=5)
 		{
-			if($this->database->deleteModel('users', [ 'id'=>$userId ]))
-			{
-				return true;
-			}else
-			{
-				throw new Exception ($this->database->error());
-			}
+			$this->database->deleteModel('users', [ 'id'=>$userId ]);
+			return true;
 		}
 	}
 
@@ -127,7 +117,7 @@ class manager
 			z.domain_id = r.domain_id AND
 			z.owner = ?;";
 
-			if($this->database->query_master($query, [ $userId ]))
+			if($this->database->queryMaster($query, [ $userId ]))
 			{
 				return true;
 			}else
@@ -211,9 +201,7 @@ class manager
 	{
 		$query = "SELECT * FROM domains WHERE id=?";
 
-		$query = $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
-
-		return $this->database->fetch_row($query);
+		return $this->database->fetchRow($query, [ $domainId ]);
 	}
 
 	function addDomain ($name, $master, $lastCheck, $type, $notifiedSerial, $account)
@@ -254,9 +242,8 @@ class manager
 	function canAddDomainCheckMax ($userId)
 	{
 		$query = "SELECT count(owner) AS current FROM zones WHERE owner = ?";
-		$query	= $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
-		$record = $this->database->fetch_row($query);
-
+		$record	= $this->database->fetchRow($query, [ $userId ]) or die ($this->database->error());
+		
 		$user = $this->getUser($userId);
 
 		if($record['current'] < $user['maxdomains'] || $user['maxdomains'] == 0)
@@ -287,9 +274,7 @@ class manager
 		GROUP BY r.domain_id
 		ORDER BY name";
 		$queryArgs []= "%$q%";
-		$query	= $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
-
-		return $this->database->fetch_all($query);
+		return $this->database->fetchAll($query, $queryArgs);
 	}
 
 	function getListByLetter ($letter)
@@ -310,9 +295,7 @@ class manager
 		GROUP BY r.domain_id
 		HAVING regex = 1
 		ORDER BY name;";
-		$query = $this->database->query_slave($query, $queryArgs) or die ($this->database->error());
-
-		return $this->database->fetch_all($query);
+		return $this->database->fetchAll($query, $queryArgs);
 	}
 
 	function getListByOwner ($userId)
@@ -328,9 +311,7 @@ class manager
 			GROUP BY r.domain_id
 			ORDER BY name;";
 
-			$query = $this->database->query_slave($query, [ $userId ]) or die ($this->database->error());
-
-			return $this->database->fetch_all($query);
+			return $this->database->fetchAll($query, [ $userId ]);
 		} else {
 			return $this->searchDomains('');
 		}
@@ -340,15 +321,7 @@ class manager
 	{
 		$query = "SELECT id, fullname, level FROM users ORDER BY fullname";
 
-		$query = $this->database->query_slave($query) or die ($this->database->error());
-
-		if($this->database->num_rows($query)==0)
-		{
-			throw new Exception("No records found");
-		}else
-		{
-			return $this->database->fetch_all($query);
-		}
+		return $this->database->fetchAll($query, []);
 	}
 
 	function transferDomain ($domainId, $owner)
@@ -413,7 +386,7 @@ class manager
 
 		$query .= " records.id=?";
 		$queryArgs []= $recordId;
-		if($this->database->query_master($query, $queryArgs))
+		if($this->database->queryMaster($query, $queryArgs))
 		{
 			// UPDATE THE SOA SERIAL
 			$this->updateSoaSerial($domainId);
@@ -437,21 +410,16 @@ class manager
 
 		$query .= " r.domain_id = ?";
 
-		$query = $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
+		$stmt = $this->database->querySlave($query, [ $domainId ]) or die ($this->database->error());
 
-		if($this->database->num_rows($query)==0)
+		$return = array();
+		while($record=$stmt->fetch(PDO::FETCH_ASSOC))
 		{
-			return [];
-		}else
-		{
-			while($record=$this->database->fetch_row($query))
-			{
-				$sortkey = implode('.', array_reverse(explode('.', $record['_sort_key'])));
-				$return[$sortkey] = $record;
-			}
-			ksort($return);
-			return array_values($return);
+			$sortkey = implode('.', array_reverse(explode('.', $record['_sort_key'])));
+			$return[$sortkey] = $record;
 		}
+		ksort($return);
+		return array_values($return);
 	}
 
 	function removeAllRecords ($domainId)
@@ -466,7 +434,7 @@ class manager
 
 		$query .= " records.domain_id=?;";
 
-		$this->database->query_master($query, [ $domainId ]);
+		$this->database->queryMaster($query, [ $domainId ]);
 		return true;
 	}
 
@@ -478,8 +446,7 @@ class manager
 	function updateSoaSerial ($domainId)
 	{
 		$query 		= "SELECT content FROM records WHERE domain_id=? AND type='SOA'";
-		$query 		= $this->database->query_slave($query, [ $domainId ]) or die ($this->database->error());
-		$record		= $this->database->fetch_row($query);
+		$record 	= $this->database->fetchRow($query, [ $domainId ]) or die ($this->database->error());
 		$soa		= explode(" ", $record['content']);
 
 		if(substr($soa[2], 0, 8) != date("Ymd")) // IF THE SOA ISN'T OF TODAY THEN CREATE A NEW SOA
