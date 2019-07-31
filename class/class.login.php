@@ -65,7 +65,7 @@ class login
 			$_SESSION['level']	= $record['level'];
 			$_SESSION['username']	= $username;
 			$_SESSION['password']	= $record['password'];
-			if ($record['u2fdata'] != NULL) {
+			if ($record['u2fdata'] != null) {
 				$u2fdata = json_decode($record['u2fdata']);
 				if ($u2fdata) {
 					//var_dump($u2fdata);
@@ -85,14 +85,14 @@ class login
 	function checkU2fSignature($username, $response) {
 		global $u2f;
 		$authReq = json_decode($_SESSION['authReq']);
-		$_SESSION['authReq'] = NULL;
+		$_SESSION['authReq'] = null;
 		if ($username !== $_SESSION['username']) throw new Exception("InvalidRequest");
 		$query = "SELECT u2fdata FROM users WHERE username=? AND active='1'";
 		$record = $this->database->fetchRow($query, [ $username ]);
 		if(!$record)
 			throw new Exception ("NoUserFound");
 
-		if ($record['u2fdata'] != NULL) {
+		if ($record['u2fdata'] != null) {
 			$u2fdata = json_decode($record['u2fdata']);
 			$data = $u2f->doAuthenticate($authReq, $u2fdata, json_decode($response));
 			foreach($u2fdata as &$i) {
@@ -103,7 +103,7 @@ class login
 
 			$_SESSION['loggedIn'] = true;
 			$this->generateXsrfToken();
-			return TRUE;
+			return true;
 		}
 		throw new Exception("LoginError");
 	}

@@ -173,7 +173,7 @@ class manager
 			$idVals['owner'] = $_SESSION['userId'];
 		}
 
-		if($this->database->deleteModel('zones', $idVals, FALSE))
+		if($this->database->deleteModel('zones', $idVals, false))
 		{
 			return true;
 		}else
@@ -349,7 +349,7 @@ class manager
 			"name" => $name, "type" => $type,
 			"content" => $content, "ttl" => $ttl,
 			"prio" => $prio, "change_date" => $changeDate
-		], FALSE);  //don't show error if no change was made
+		], false);  //don't show error if no change was made
 		
 		if($updateSerial)
 		{

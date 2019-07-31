@@ -62,7 +62,7 @@ switch($_GET['p'])
 		include_once("./class/class.PDO.php");
 		$dsn = $_POST['db_type'] . ':dbname=' . $_POST['db_base'] . ';host='.$_POST['db_host'];
 		try {
-			$db = new PDO_DB($_POST['db_user'], $_POST['db_pass'], $dsn, array($dsn), FALSE);
+			$db = new PDO_DB($_POST['db_user'], $_POST['db_pass'], $dsn, array($dsn), false);
 			echo "<h3>Database connection successful</h3>";
 		} catch(Exception $ex) {
 			echo "<h3>Connecting to the database failed</h3><p>Please check your inputs and try again (Used DSN: <code>$dsn</code>)</p>";

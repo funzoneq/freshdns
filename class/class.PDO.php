@@ -25,7 +25,7 @@ class PDO_DB {
 	
 	/*****************************************************/
 	
-	function __construct($username, $password, $master, $slaves = array(), $replication=FALSE)
+	function __construct($username, $password, $master, $slaves = array(), $replication=false)
 	{
 		$this->username = $username;
 		$this->password = $password;
@@ -160,7 +160,7 @@ class PDO_DB {
 		return implode($joiner, $queryParts);
 	}
 
-	function updateModel($tableName, $idFields, $fieldsToUpdate, $exactlyOne=TRUE) {
+	function updateModel($tableName, $idFields, $fieldsToUpdate, $exactlyOne=true) {
 		$query = "UPDATE `$tableName` ";
 		$queryArgs = [];
 		$query .= " SET " . $this->buildQueryPart($fieldsToUpdate, ", ", $queryArgs);
@@ -171,7 +171,7 @@ class PDO_DB {
 		return $res;
 	}
 	
-	function deleteModel($tableName, $idFields, $exactlyOne=TRUE) {
+	function deleteModel($tableName, $idFields, $exactlyOne=true) {
 		$query = "DELETE FROM `$tableName` ";
 		$queryArgs = [];
 		$query .= " WHERE " . $this->buildQueryPart($idFields, " AND ", $queryArgs);
